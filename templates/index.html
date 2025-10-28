@@ -1,0 +1,521 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Smart Parcel System</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { 
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      h1 {
+        color: white;
+        text-align: center;
+        margin-bottom: 30px;
+        font-size: 2.5em;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+      }
+      .main-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 20px;
+      }
+      @media (max-width: 768px) {
+        .main-grid { grid-template-columns: 1fr; }
+      }
+      .card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        transition: transform 0.3s ease;
+      }
+      .card:hover {
+        transform: translateY(-5px);
+      }
+      .card h2 {
+        color: #667eea;
+        margin-bottom: 20px;
+        font-size: 1.5em;
+        border-bottom: 3px solid #667eea;
+        padding-bottom: 10px;
+      }
+      #video {
+        width: 100%;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      }
+      canvas { display: none; }
+      .form-group {
+        margin-bottom: 15px;
+      }
+      input, select {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: border 0.3s;
+      }
+      input:focus, select:focus {
+        outline: none;
+        border-color: #667eea;
+      }
+      button {
+        width: 100%;
+        padding: 14px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 10px;
+      }
+      button:hover {
+        transform: scale(1.02);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+      }
+      button:active {
+        transform: scale(0.98);
+      }
+      .btn-secondary {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      }
+      .btn-success {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      }
+      #result {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        min-height: 200px;
+        display: none;
+      }
+      #result.show {
+        display: block;
+        animation: slideIn 0.5s ease;
+      }
+      @keyframes slideIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .success-card {
+        text-align: center;
+        padding: 40px;
+      }
+      .unique-id {
+        font-size: 3em;
+        font-weight: bold;
+        color: #667eea;
+        letter-spacing: 8px;
+        margin: 20px 0;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+      }
+      .welcome-text {
+        font-size: 1.8em;
+        color: #333;
+        margin-bottom: 10px;
+      }
+      .instruction-text {
+        color: #666;
+        font-size: 1.1em;
+        margin-top: 20px;
+        line-height: 1.6;
+      }
+      .parcel-list {
+        list-style: none;
+      }
+      .parcel-item {
+        background: #f8f9fa;
+        padding: 15px;
+        margin: 10px 0;
+        border-radius: 8px;
+        border-left: 4px solid #667eea;
+      }
+      .parcel-item strong {
+        color: #667eea;
+      }
+      .status-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: bold;
+        margin-left: 8px;
+      }
+      .status-stored {
+        background: #ffeaa7;
+        color: #d63031;
+      }
+      .status-collected {
+        background: #55efc4;
+        color: #00b894;
+      }
+      .loader {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #667eea;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 20px auto;
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>📦 Smart Parcel System</h1>
+      
+      <div class="main-grid">
+        <div class="card">
+          <h2>📸 Camera</h2>
+          <video id="video" autoplay muted playsinline></video>
+          <canvas id="canvas" width="640" height="480"></canvas>
+
+        </div>
+
+        <div class="card">
+          <h2>👤 Register New User</h2>
+          <div class="form-group">
+            <input id="name" placeholder="Enter your name" />
+          </div>
+          <div class="form-group">
+            <input id="phone" placeholder="Phone number (optional)" />
+          </div>
+          <button id="registerBtn">🎯 Register & Get My ID</button>
+          
+          <hr style="margin: 30px 0; border: none; border-top: 2px dashed #e0e0e0;" />
+          
+          <h2>🔍 Recognize Face</h2>
+          <button id="recognizeBtn" class="btn-secondary">Identify Me</button>
+        </div>
+      </div>
+
+      <div class="main-grid">
+        <div class="card">
+          <h2>📦 Add New Parcel</h2>
+          <div class="form-group">
+            <input id="tracking" placeholder="Tracking code" />
+          </div>
+          <div class="form-group">
+            <input id="owner_id" placeholder="Owner ID (or use face recognition)" />
+          </div>
+          <div class="form-group">
+            <input id="note" placeholder="Note (optional)" />
+          </div>
+          <button id="addParcelBtn">Add Parcel</button>
+        </div>
+
+        <div class="card">
+          <h2>📋 Manage Parcels</h2>
+          <button id="listMyParcelsBtn" class="btn-success">Show My Parcels</button>
+          <div class="form-group" style="margin-top: 15px;">
+            <select id="parcelsSelect">
+              <option value="">-- Select a parcel --</option>
+            </select>
+          </div>
+          <button id="collectParcelBtn" class="btn-secondary">Collect Selected Parcel</button>
+          
+          <hr style="margin: 20px 0; border: none; border-top: 2px dashed #e0e0e0;" />
+          
+          <h2>🔎 Track by ID</h2>
+          <div class="form-group">
+            <input id="trackId" placeholder="Enter your 6-character ID" maxlength="6" style="text-transform: uppercase; text-align: center; letter-spacing: 4px; font-size: 18px;" />
+          </div>
+          <button id="trackBtn">Track My Orders</button>
+        </div>
+      </div>
+
+      <div id="result"></div>
+    </div>
+
+    <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const resultDiv = document.getElementById('result');
+
+    async function startCamera(){
+      try{
+        const stream = await navigator.mediaDevices.getUserMedia({video:true, audio:false});
+        video.srcObject = stream;
+        await video.play();
+      }catch(e){
+        showError('Failed to access camera: ' + e.message);
+      }
+    }
+
+    function captureImage(){
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0);
+      return canvas.toDataURL('image/jpeg');
+    }
+
+    async function postJson(url, data){
+      const res = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data)});
+      return res;
+    }
+
+    function showLoading(message = 'Processing...'){
+      resultDiv.innerHTML = `
+        <div style="text-align: center;">
+          <div class="loader"></div>
+          <p style="color: #666; margin-top: 10px;">${message}</p>
+        </div>
+      `;
+      resultDiv.classList.add('show');
+    }
+
+    function showError(message){
+      resultDiv.innerHTML = `
+        <div style="text-align: center; color: #d63031;">
+          <h2>❌ Error</h2>
+          <p style="margin-top: 15px; font-size: 1.1em;">${message}</p>
+        </div>
+      `;
+      resultDiv.classList.add('show');
+    }
+
+    function showSuccess(title, content){
+      resultDiv.innerHTML = `
+        <div class="success-card">
+          ${content}
+        </div>
+      `;
+      resultDiv.classList.add('show');
+    }
+
+    document.getElementById('registerBtn').addEventListener('click', async ()=>{
+      const name = document.getElementById('name').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      if(!name){ showError('Please enter your name'); return; }
+      
+      showLoading('Registering and generating your unique ID...');
+      const img = captureImage();
+      const res = await postJson('/register', {name, phone, image: img});
+      const data = await res.json();
+      
+      if(data.face_uuid){
+        showSuccess('Registration Complete', `
+          <h2 class="welcome-text">Welcome, ${name}! 👋</h2>
+          <p style="color: #666; margin-top: 10px;">Your Unique ID:</p>
+          <div class="unique-id">${data.face_uuid}</div>
+          <div class="instruction-text">
+            ✅ Save this ID - you'll need it to track your parcels<br>
+            ✅ 5 facial recognition samples generated automatically<br>
+            ✅ You can now collect parcels using face recognition
+          </div>
+        `);
+      } else {
+        showError('Registration failed. Please try again.');
+      }
+    });
+
+    document.getElementById('recognizeBtn').addEventListener('click', async ()=>{
+      showLoading('Recognizing your face...');
+      const img = captureImage();
+      const res = await postJson('/recognize', {image: img});
+      
+      if(res.status === 404){
+        showError('Face not recognized. Please register first.');
+        return;
+      }
+      
+      const data = await res.json();
+      if(data.match){
+        showSuccess('Recognition Successful', `
+          <h2 class="welcome-text">Hello, ${data.match.name}! 👋</h2>
+          <p style="color: #666; margin-top: 10px;">Your Unique ID:</p>
+          <div class="unique-id">${data.match.face_uuid}</div>
+          <div class="instruction-text">
+            Confidence Score: ${(data.match.score * 100).toFixed(1)}%
+          </div>
+        `);
+      } else {
+        showError('Could not recognize face. Please try again or register.');
+      }
+    });
+
+    document.getElementById('addParcelBtn').addEventListener('click', async ()=>{
+      const tracking = document.getElementById('tracking').value.trim();
+      const owner_id = document.getElementById('owner_id').value.trim();
+      const note = document.getElementById('note').value.trim();
+      
+      showLoading('Adding parcel...');
+      const body = { tracking_code: tracking || null, note: note || null };
+      if(owner_id) body.owner_id = parseInt(owner_id);
+      
+      const res = await postJson('/parcel/add', body);
+      const data = await res.json();
+      
+      if(data.status === 'ok'){
+        showSuccess('Parcel Added', `
+          <h2 class="welcome-text">✅ Parcel Added Successfully</h2>
+          <div class="instruction-text">
+            📦 Parcel ID: <strong>${data.parcel_id}</strong><br>
+            📍 Storage Slot: <strong>${data.slot}</strong><br>
+            ${tracking ? `🔢 Tracking: <strong>${tracking}</strong>` : ''}
+          </div>
+        `);
+        document.getElementById('tracking').value = '';
+        document.getElementById('owner_id').value = '';
+        document.getElementById('note').value = '';
+      }
+    });
+
+    document.getElementById('listMyParcelsBtn').addEventListener('click', async ()=>{
+      showLoading('Recognizing face and loading your parcels...');
+      const img = captureImage();
+      const res = await postJson('/parcel/collect', { image: img });
+      
+      if(res.status === 404){
+        showError('Face not recognized. Please register first.');
+        return;
+      }
+      
+      const data = await res.json();
+      
+      if(data.status === 'no_parcels'){
+        showSuccess('No Parcels', `
+          <h2 class="welcome-text">Hello, ${data.user.name}!</h2>
+          <div class="instruction-text">
+            You don't have any parcels waiting for collection yet.
+          </div>
+        `);
+        return;
+      }
+      
+      if(data.parcels && data.parcels.length > 0){
+        const parcelHTML = data.parcels.map(p => `
+          <div class="parcel-item">
+            <strong>Parcel #${p.id}</strong>
+            <span class="status-badge status-${p.status || 'stored'}">${(p.status || 'stored').toUpperCase()}</span><br>
+            📦 Tracking: ${p.tracking || 'N/A'}<br>
+            📍 Slot: ${p.slot}<br>
+            📅 Arrived: ${p.arrival_time ? new Date(p.arrival_time).toLocaleString() : 'N/A'}
+          </div>
+        `).join('');
+        
+        showSuccess('Your Parcels', `
+          <h2 class="welcome-text">Hello, ${data.user.name}! 👋</h2>
+          <div class="instruction-text">You have ${data.parcels.length} parcel(s):</div>
+          <ul class="parcel-list">
+            ${parcelHTML}
+          </ul>
+        `);
+        
+        // Populate select
+        const sel = document.getElementById('parcelsSelect');
+        sel.innerHTML = '<option value="">-- Select a parcel --</option>';
+        data.parcels.forEach(p => {
+          const opt = document.createElement('option');
+          opt.value = p.id;
+          opt.text = `#${p.id} - ${p.tracking || 'No tracking'} (Slot ${p.slot})`;
+          sel.appendChild(opt);
+        });
+      }
+    });
+
+    document.getElementById('collectParcelBtn').addEventListener('click', async ()=>{
+      const sel = document.getElementById('parcelsSelect');
+      const parcel_id = sel.value;
+      if(!parcel_id){ showError('Please select a parcel to collect'); return; }
+      
+      showLoading('Recognizing face and collecting parcel...');
+      const img = captureImage();
+      const res = await postJson('/parcel/collect', { image: img, parcel_id: parseInt(parcel_id) });
+      const data = await res.json();
+      
+      if(data.status === 'collected'){
+        showSuccess('Parcel Collected', `
+          <h2 class="welcome-text">✅ Parcel Collected Successfully!</h2>
+          <div class="instruction-text">
+            👤 Collected by: <strong>${data.user.name}</strong><br>
+            📦 Parcel ID: <strong>${data.parcel_id}</strong><br>
+            📍 From Slot: <strong>${data.slot}</strong><br>
+            ${data.user.phone ? '📱 SMS notification sent!' : ''}
+          </div>
+        `);
+        sel.value = '';
+      } else if(data.status === 'not_found'){
+        showError('Face not recognized. Access denied.');
+      } else if(data.status === 'no_parcels'){
+        showError('This parcel is not available or already collected.');
+      }
+    });
+
+    document.getElementById('trackBtn').addEventListener('click', async ()=>{
+      const trackId = document.getElementById('trackId').value.trim().toUpperCase();
+      if(!trackId || trackId.length !== 6){
+        showError('Please enter a valid 6-character ID');
+        return;
+      }
+      
+      showLoading('Loading your parcels...');
+      const res = await fetch(`/track/${trackId}`);
+      
+      if(res.status === 404){
+        showError('ID not found. Please check your ID and try again.');
+        return;
+      }
+      
+      const data = await res.json();
+      
+      if(data.parcels && data.parcels.length > 0){
+        const parcelHTML = data.parcels.map(p => `
+          <div class="parcel-item">
+            <strong>Parcel #${p.id}</strong>
+            <span class="status-badge status-${p.status}">${p.status.toUpperCase()}</span><br>
+            📦 Tracking: ${p.tracking_code || 'N/A'}<br>
+            📍 Slot: ${p.slot}<br>
+            📅 Arrived: ${p.arrival_time ? new Date(p.arrival_time).toLocaleString() : 'N/A'}<br>
+            ${p.collected_time ? `✅ Collected: ${new Date(p.collected_time).toLocaleString()}` : ''}
+          </div>
+        `).join('');
+        
+        showSuccess('Your Orders', `
+          <h2 class="welcome-text">Hello, ${data.user.name}! 👋</h2>
+          <p style="color: #666; margin-top: 10px;">Your ID: <strong>${data.face_uuid}</strong></p>
+          <div class="instruction-text">You have ${data.total_parcels} parcel(s):</div>
+          <ul class="parcel-list">
+            ${parcelHTML}
+          </ul>
+        `);
+      } else {
+        showSuccess('Your Orders', `
+          <h2 class="welcome-text">Hello, ${data.user.name}! 👋</h2>
+          <p style="color: #666; margin-top: 10px;">Your ID: <strong>${data.face_uuid}</strong></p>
+          <div class="instruction-text">
+            You don't have any parcels yet.
+          </div>
+        `);
+      }
+    });
+
+    // Auto-uppercase track ID input
+    document.getElementById('trackId').addEventListener('input', (e) => {
+      e.target.value = e.target.value.toUpperCase();
+    });
+
+    startCamera();
+    </script>
+  </body>
+</html>

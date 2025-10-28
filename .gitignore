@@ -1,0 +1,63 @@
+# Virtual Environment
+.venv/
+venv/
+env/
+ENV/
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+data.db
+
+# Uploads and User Data
+uploads/
+*.jpg
+*.jpeg
+*.png
+*.gif
+
+# Environment Variables and Secrets
+.env
+.env.local
+config.ini
+secrets.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+logs/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Temp files
+*.tmp
+tmp/
+temp/
+
+# DeepFace models cache
+.deepface/
+
+# Script outputs
+scripts/dump_db.py
+scripts/test_*.py

@@ -1,0 +1,9 @@
+flask
+flask-cors
+deepface
+tensorflow
+sqlalchemy
+pillow
+numpy
+opencv-python
+itsdangerous
