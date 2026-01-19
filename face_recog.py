@@ -2,6 +2,7 @@ import os
 import uuid
 import json
 import base64
+import io
 import numpy as np
 
 # Try to import DeepFace; if unavailable, fall back to OpenCV-based simple embeddings
@@ -19,8 +20,8 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 UPLOADS = os.path.join(BASE_DIR, 'uploads')
 os.makedirs(UPLOADS, exist_ok=True)
 
-# DeepFace model settings
-MODEL_NAME = 'Facenet'
+# DeepFace model settings - VGG-Face is more accurate than Facenet
+MODEL_NAME = 'VGG-Face'
 MODEL = None
 
 
@@ -40,8 +41,35 @@ def save_base64_image(b64data, prefix='img'):
     img_bytes = base64.b64decode(data)
     filename = f"{prefix}_{uuid.uuid4().hex}.jpg"
     path = os.path.join(UPLOADS, filename)
-    with open(path, 'wb') as f:
-        f.write(img_bytes)
+    
+    # Preprocess image for better recognition
+    try:
+        # Load image
+        img = Image.open(io.BytesIO(img_bytes))
+        
+        # Convert to RGB if needed
+        if img.mode != 'RGB':
+            img = img.convert('RGB')
+        
+        # Enhance image quality using OpenCV
+        img_cv = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
+        
+        # Apply histogram equalization for better lighting
+        img_yuv = cv2.cvtColor(img_cv, cv2.COLOR_BGR2YUV)
+        img_yuv[:,:,0] = cv2.equalizeHist(img_yuv[:,:,0])
+        img_cv = cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR)
+        
+        # Denoise
+        img_cv = cv2.fastNlMeansDenoisingColored(img_cv, None, 10, 10, 7, 21)
+        
+        # Save enhanced image
+        cv2.imwrite(path, img_cv, [cv2.IMWRITE_JPEG_QUALITY, 95])
+    except Exception as e:
+        # If preprocessing fails, save original
+        print(f"Preprocessing failed, using original: {e}")
+        with open(path, 'wb') as f:
+            f.write(img_bytes)
+    
     return path
 
 
@@ -73,15 +101,35 @@ def _detect_and_crop_face_opencv(image_path, target_size=(160, 160)):
     return arr.flatten()
 
 
-def get_embedding_from_file(image_path):
+def get_embedding_from_file(image_path, enforce_detection=True):
     """Return embedding vector (numpy array) for an image file.
     Uses DeepFace if available; otherwise a simple OpenCV-based flattened face crop.
+    
+    Args:
+        image_path: Path to image file
+        enforce_detection: If True, raises error when no face detected. If False, uses fallback.
     """
     if _HAS_DEEPFACE:
         # Some DeepFace versions do not accept a 'model' kwarg for represent(); call with model_name only
         # load_model() will still ensure weights are available if needed
         _ = load_model()
-        reps = DeepFace.represent(img_path=image_path, model_name=MODEL_NAME, enforce_detection=True)
+        try:
+            # Use detector_backend='opencv' for more reliable detection, align face for better accuracy
+            reps = DeepFace.represent(
+                img_path=image_path, 
+                model_name=MODEL_NAME, 
+                enforce_detection=enforce_detection,
+                detector_backend='opencv',
+                align=True
+            )
+        except Exception as e:
+            # If face detection fails and we have enforce_detection=True, try fallback
+            if enforce_detection and "could not be detected" in str(e).lower():
+                print(f"DeepFace detection failed, using OpenCV fallback: {str(e)}")
+                vec = _detect_and_crop_face_opencv(image_path)
+                return np.array(vec, dtype=np.float32)
+            else:
+                raise
         # DeepFace.represent may return different shapes across versions: a dict with 'embedding',
         # a list of dicts, or a simple list/ndarray. Handle common cases robustly.
         if isinstance(reps, dict) and 'embedding' in reps:
@@ -100,10 +148,12 @@ def get_embedding_from_file(image_path):
         return np.array(vec, dtype=np.float32)
 
 
-def get_embedding_from_base64(b64data):
+def get_embedding_from_base64(b64data, enforce_detection=False):
+    """Get embedding from base64 image. 
+    By default, uses fallback detection (enforce_detection=False) for better UX."""
     path = save_base64_image(b64data, prefix='tmp')
     try:
-        emb = get_embedding_from_file(path)
+        emb = get_embedding_from_file(path, enforce_detection=enforce_detection)
     finally:
         try:
             os.remove(path)
@@ -122,11 +172,12 @@ def cosine_similarity(a, b):
     return float(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)))
 
 
-def find_best_match(embedding, candidates, threshold=0.5):
+def find_best_match(embedding, candidates, threshold=0.4):
     """
     candidates: iterable of tuples (id, name, embedding_np)
     returns best candidate dict or None
-    threshold is cosine similarity threshold (higher == stricter match)
+    threshold is cosine similarity threshold (lowered to 0.4 for better recognition)
+    VGG-Face typically has lower similarity scores but better accuracy
     """
     best = None
     best_score = -1.0

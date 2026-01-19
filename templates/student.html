@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Portal - SmartParcel</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: oklch(0.12 0.01 260);
+      color: oklch(0.96 0 0);
+      line-height: 1.6;
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Animated Background Blobs */
+    .bg-blob {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.25;
+      pointer-events: none;
+      z-index: 0;
+      animation: float 18s ease-in-out infinite;
+    }
+
+    .blob-1 {
+      width: 350px;
+      height: 350px;
+      background: oklch(0.55 0.22 250);
+      top: -150px;
+      left: -150px;
+      animation-delay: 0s;
+    }
+
+    .blob-2 {
+      width: 400px;
+      height: 400px;
+      background: oklch(0.6 0.18 165);
+      bottom: -200px;
+      right: -200px;
+      animation-delay: -9s;
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translate(0, 0) scale(1);
+      }
+      33% {
+        transform: translate(20px, -40px) scale(1.1);
+      }
+      66% {
+        transform: translate(-15px, 15px) scale(0.9);
+      }
+    }
+    
+    /* Header */
+    header {
+      border-bottom: 1px solid oklch(0.26 0.01 260 / 0.5);
+      background: oklch(0.16 0.01 260 / 0.3);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    
+    .header-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    .back-button {
+      color: oklch(0.7 0.01 260);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: color 0.2s;
+      font-size: 0.875rem;
+      padding: 0.5rem;
+      border-radius: 0.5rem;
+    }
+    
+    .back-button:hover {
+      color: oklch(0.96 0 0);
+      background: oklch(0.2 0.01 260 / 0.5);
+    }
+    
+    .header-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    .header-icon {
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 0.75rem;
+      background: oklch(0.65 0.19 250 / 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: oklch(0.65 0.19 250);
+    }
+    
+    h1 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: oklch(0.96 0 0);
+      margin-bottom: 0.125rem;
+    }
+    
+    .subtitle {
+      color: oklch(0.7 0.01 260);
+      font-size: 0.75rem;
+    }
+    
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+    
+    /* Alert Messages */
+    .alert {
+      padding: 1rem;
+      border-radius: 0.75rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      animation: slideIn 0.3s ease-out;
+    }
+    
+    .alert-success {
+      background: oklch(0.7 0.17 155 / 0.15);
+      border: 1px solid oklch(0.7 0.17 155 / 0.3);
+      color: oklch(0.7 0.17 155);
+    }
+    
+    .alert-error {
+      background: oklch(0.65 0.22 15 / 0.15);
+      border: 1px solid oklch(0.65 0.22 15 / 0.3);
+      color: oklch(0.65 0.22 15);
+    }
+    
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    /* Grid Layout */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+    }
+    
+    @media (max-width: 1024px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    /* Cards */
+    .card {
+      background: oklch(0.16 0.01 260 / 0.5);
+      backdrop-filter: blur(24px);
+      border: 1px solid oklch(0.26 0.01 260 / 0.5);
+      border-radius: 1rem;
+      overflow: hidden;
+    }
+    
+    .card-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid oklch(0.26 0.01 260 / 0.5);
+    }
+    
+    .card-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: oklch(0.96 0 0);
+      margin-bottom: 0.375rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .card-description {
+      color: oklch(0.7 0.01 260);
+      font-size: 0.875rem;
+    }
+    
+    .card-content {
+      padding: 1.5rem;
+    }
+    
+    /* Form Elements */
+    label {
+      display: block;
+      color: oklch(0.7 0.01 260);
+      margin-bottom: 0.5rem;
+      font-size: 0.875rem;
+    }
+    
+    select, input, textarea {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background: oklch(0.2 0.01 260 / 0.5);
+      border: 1px solid oklch(0.3 0.01 260 / 0.5);
+      border-radius: 0.5rem;
+      color: oklch(0.96 0 0);
+      font-size: 0.9375rem;
+      margin-bottom: 1rem;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    
+    select:focus, input:focus, textarea:focus {
+      outline: none;
+      border-color: oklch(0.65 0.19 250);
+      box-shadow: 0 0 0 3px oklch(0.65 0.19 250 / 0.1);
+      background: oklch(0.22 0.01 260 / 0.5);
+    }
+    
+    textarea {
+      resize: none;
+      min-height: 80px;
+    }
+    
+    /* Video */
+    video {
+      width: 100%;
+      border-radius: 0.75rem;
+      background: oklch(0.08 0.01 260);
+      margin-bottom: 1rem;
+      border: 1px solid oklch(0.26 0.01 260 / 0.5);
+      aspect-ratio: 16/9;
+    }
+    
+    /* Buttons */
+    button {
+      width: 100%;
+      padding: 0.75rem 1.5rem;
+      background: oklch(0.65 0.19 250);
+      color: oklch(0.96 0 0);
+      border: none;
+      border-radius: 0.5rem;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    
+    button:hover:not(:disabled) {
+      background: oklch(0.7 0.19 250);
+      box-shadow: 0 4px 12px oklch(0.65 0.19 250 / 0.3);
+    }
+    
+    button:active:not(:disabled) {
+      transform: scale(0.98);
+    }
+    
+    button:disabled {
+      background: oklch(0.3 0.01 260);
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+    
+    /* Student ID Card */
+    .student-id-card {
+      background: linear-gradient(135deg, oklch(0.65 0.19 250) 0%, oklch(0.7 0.17 165) 100%);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: 1px solid oklch(0.65 0.19 250 / 0.3);
+      text-align: center;
+    }
+    
+    .student-id-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px oklch(0.65 0.19 250 / 0.3);
+    }
+    
+    .id-label {
+      font-size: 0.75rem;
+      color: oklch(0.96 0 0 / 0.7);
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-weight: 600;
+    }
+    
+    .id-value {
+      font-size: 1.875rem;
+      font-weight: 700;
+      color: oklch(0.96 0 0);
+      letter-spacing: 0.15em;
+      font-family: 'Courier New', monospace;
+    }
+    
+    .student-name {
+      margin-top: 0.5rem;
+      font-size: 1.125rem;
+      font-weight: 500;
+      color: oklch(0.96 0 0 / 0.9);
+    }
+    
+    /* Parcel Cards */
+    .parcel-card {
+      background: oklch(0.2 0.01 260 / 0.5);
+      backdrop-filter: blur(12px);
+      border: 1px solid oklch(0.26 0.01 260 / 0.5);
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .parcel-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        oklch(0.85 0.12 250 / 0.08),
+        transparent
+      );
+      transition: left 0.5s;
+    }
+
+    .parcel-card:hover::before {
+      left: 100%;
+    }
+    
+    .parcel-card:hover {
+      border-color: oklch(0.65 0.19 250 / 0.5);
+      box-shadow: 0 8px 24px oklch(0.65 0.19 250 / 0.15);
+      transform: translateY(-2px);
+    }
+    
+    .parcel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid oklch(0.26 0.01 260 / 0.5);
+    }
+    
+    .tracking-code {
+      font-weight: 600;
+      color: oklch(0.96 0 0);
+      font-size: 1rem;
+      font-family: 'Courier New', monospace;
+    }
+    
+    .status-badge {
+      padding: 0.375rem 0.875rem;
+      border-radius: 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    .status-stored {
+      background: oklch(0.65 0.19 250 / 0.2);
+      color: oklch(0.65 0.19 250);
+      border: 1px solid oklch(0.65 0.19 250 / 0.3);
+    }
+    
+    .status-collected {
+      background: oklch(0.7 0.17 155 / 0.2);
+      color: oklch(0.7 0.17 155);
+      border: 1px solid oklch(0.7 0.17 155 / 0.3);
+    }
+    
+    .parcel-details {
+      color: oklch(0.7 0.01 260);
+      font-size: 0.875rem;
+      line-height: 1.8;
+    }
+    
+    .parcel-details strong {
+      color: oklch(0.9 0 0);
+      font-weight: 600;
+    }
+    
+    .badge-row {
+      margin-top: 1rem;
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    
+    .location-badge {
+      background: oklch(0.3 0.01 260 / 0.5);
+      color: oklch(0.8 0.01 260);
+      padding: 0.375rem 0.75rem;
+      border-radius: 0.5rem;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      border: 1px solid oklch(0.35 0.01 260 / 0.5);
+    }
+    
+    .time-badge {
+      background: oklch(0.75 0.15 75 / 0.2);
+      color: oklch(0.75 0.15 75);
+      padding: 0.375rem 0.75rem;
+      border-radius: 0.5rem;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      border: 1px solid oklch(0.75 0.15 75 / 0.3);
+    }
+    
+    .time-badge.urgent {
+      background: oklch(0.65 0.22 15 / 0.2);
+      color: oklch(0.65 0.22 15);
+      border-color: oklch(0.65 0.22 15 / 0.3);
+    }
+    
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1.25rem;
+      color: oklch(0.6 0.01 260);
+    }
+    
+    .empty-icon {
+      width: 3rem;
+      height: 3rem;
+      margin: 0 auto 1rem;
+      opacity: 0.5;
+      color: oklch(0.5 0.01 260);
+    }
+    
+    /* Spinner */
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .spinner {
+      border: 2px solid oklch(0.3 0.01 260);
+      border-top: 2px solid oklch(0.65 0.19 250);
+      border-radius: 50%;
+      width: 1rem;
+      height: 1rem;
+      animation: spin 0.7s linear infinite;
+      display: inline-block;
+    }
+    
+    .parcels-scroll {
+      max-height: 600px;
+      overflow-y: auto;
+      padding-right: 0.5rem;
+    }
+    
+    .parcels-scroll::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    .parcels-scroll::-webkit-scrollbar-track {
+      background: oklch(0.2 0.01 260 / 0.3);
+      border-radius: 3px;
+    }
+    
+    .parcels-scroll::-webkit-scrollbar-thumb {
+      background: oklch(0.35 0.01 260);
+      border-radius: 3px;
+    }
+    
+    .parcels-scroll::-webkit-scrollbar-thumb:hover {
+      background: oklch(0.45 0.01 260);
+    }
+    
+    .student-id-info {
+      font-size: 0.75rem;
+      color: oklch(0.7 0.01 260);
+      margin-bottom: 0.75rem;
+    }
+    
+    .student-id-info span {
+      font-family: 'Courier New', monospace;
+      color: oklch(0.96 0 0);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <!-- Animated Background Blobs -->
+  <div class="bg-blob blob-1"></div>
+  <div class="bg-blob blob-2"></div>
+
+  <!-- Header -->
+  <header>
+    <div class="header-content">
+      <a href="/" class="back-button">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="m15 18-6-6 6-6"/>
+        </svg>
+        Back
+      </a>
+      <div class="header-info">
+        <div class="header-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+          </svg>
+        </div>
+        <div>
+          <h1>Student Portal</h1>
+          <p class="subtitle">Track and collect your parcels</p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Alert Messages -->
+    <div id="alertContainer"></div>
+
+    <div class="grid">
+      <!-- Left Column - Identification -->
+      <div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-6l-2-2H5a2 2 0 0 0-2 2Z"/>
+                <circle cx="12" cy="13" r="3"/>
+              </svg>
+              Identify Yourself
+            </div>
+            <p class="card-description">Use face recognition to access your parcels</p>
+          </div>
+          <div class="card-content">
+            <label for="cameraSelect">Select Camera:</label>
+            <select id="cameraSelect"></select>
+            
+            <video id="webcam" autoplay playsinline muted></video>
+            <button id="captureBtn">
+              <span id="captureSpinner" style="display:none;" class="spinner"></span>
+              <span id="captureText">Capture & Identify</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Student ID Card -->
+        <div id="studentIdCard" style="display:none; margin-top: 1.5rem;">
+          <div class="student-id-card" onclick="copyStudentId()">
+            <div class="id-label">STUDENT ID</div>
+            <div class="id-value" id="studentIdValue">------</div>
+            <div class="student-name" id="studentName"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Middle Column - Add Order -->
+      <div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              Add Order
+            </div>
+            <p class="card-description">Register a new parcel with tracking ID</p>
+          </div>
+          <div class="card-content">
+            <label for="trackingCode">Tracking ID</label>
+            <input id="trackingCode" type="text" placeholder="Enter tracking ID">
+
+            <label for="orderNote">Note (optional)</label>
+            <textarea id="orderNote" placeholder="Sender, special instructions..." rows="3"></textarea>
+
+            <div style="padding-top: 0.5rem;">
+              <p class="student-id-info">
+                Student ID: <span id="addOrderStudentId">Not identified</span>
+              </p>
+              <button id="addOrderBtn">
+                <span id="addOrderSpinner" style="display:none;" class="spinner"></span>
+                <svg id="addOrderIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="12" y1="5" x2="12" y2="19"/>
+                  <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                <span id="addOrderText">Add Order</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column - My Parcels -->
+      <div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+              </svg>
+              My Parcels
+            </div>
+            <p class="card-description" id="parcelCount">No parcels found</p>
+          </div>
+          <div class="card-content">
+            <div id="parcelsList">
+              <div class="empty-state">
+                <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                </svg>
+                <p style="font-size: 0.875rem;">Please identify yourself to view your parcels</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    let currentStream = null;
+    let currentStudentId = null;
+    let currentOwnerId = null;
+    let studentName = "";
+
+    // Show alert message
+    function showMessage(type, text) {
+      const container = document.getElementById('alertContainer');
+      const alert = document.createElement('div');
+      alert.className = `alert alert-${type}`;
+      alert.innerHTML = `
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <span>${text}</span>
+      `;
+      container.appendChild(alert);
+      setTimeout(() => alert.remove(), 4000);
+    }
+
+    // Get available cameras
+    async function getCameras() {
+      // Check if browser supports camera API
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        showMessage('error', 'Camera not supported in this browser. Please use Chrome, Edge, or Firefox.');
+        console.error('MediaDevices API not supported. Browser:', navigator.userAgent);
+        console.error('Protocol:', location.protocol, 'Hostname:', location.hostname);
+        return;
+      }
+      
+      // Check if page is served securely (HTTPS or localhost)
+      const isSecure = location.protocol === 'https:' || 
+                      location.hostname === 'localhost' || 
+                      location.hostname === '127.0.0.1' ||
+                      location.hostname.startsWith('192.168.') ||
+                      location.hostname.startsWith('10.');
+      
+      if (!isSecure) {
+        showMessage('error', 'Camera requires HTTPS or localhost. Current: ' + location.protocol + '//' + location.hostname);
+        console.error('Camera requires secure context. Current:', location.href);
+        return;
+      }
+      
+      try {
+        // Request permission first to get device labels
+        await navigator.mediaDevices.getUserMedia({ video: true })
+          .then(stream => stream.getTracks().forEach(track => track.stop()));
+        
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter(d => d.kind === 'videoinput');
+        const sel = document.getElementById('cameraSelect');
+        sel.innerHTML = '';
+        
+        if (videoDevices.length === 0) {
+          showMessage('error', 'No cameras found. Please connect a camera and refresh.');
+          return;
+        }
+        
+        videoDevices.forEach((dev, idx) => {
+          const opt = document.createElement('option');
+          opt.value = dev.deviceId;
+          opt.textContent = dev.label || `Camera ${idx + 1}`;
+          sel.appendChild(opt);
+        });
+        
+        if (videoDevices.length > 0) {
+          startCamera();
+        }
+      } catch (err) {
+        console.error('Camera access error:', err);
+        if (err.name === 'NotAllowedError') {
+          showMessage('error', 'Camera permission denied. Please allow camera access and refresh.');
+        } else if (err.name === 'NotFoundError') {
+          showMessage('error', 'No camera found. Please connect a camera.');
+        } else {
+          showMessage('error', 'Could not access cameras: ' + err.message);
+        }
+      }
+    }
+
+    // Start camera
+    async function startCamera() {
+      // Check if browser supports camera API
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        showMessage('error', 'Camera not supported in this browser.');
+        return;
+      }
+      
+      if (currentStream) {
+        currentStream.getTracks().forEach(t => t.stop());
+      }
+      const sel = document.getElementById('cameraSelect');
+      const deviceId = sel.value;
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { 
+            deviceId: deviceId ? { exact: deviceId } : undefined,
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          }
+        });
+        currentStream = stream;
+        const video = document.getElementById('webcam');
+        video.srcObject = stream;
+        
+        // Ensure video plays
+        video.onloadedmetadata = () => {
+          video.play().catch(err => {
+            console.error('Video play error:', err);
+            showMessage('error', 'Could not start video playback');
+          });
+        };
+      } catch (err) {
+        console.error('Camera start error:', err);
+        if (err.name === 'NotAllowedError') {
+          showMessage('error', 'Camera permission denied. Please allow camera access.');
+        } else if (err.name === 'NotFoundError') {
+          showMessage('error', 'Selected camera not found. Trying default camera...');
+          // Try with default camera
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            currentStream = stream;
+            document.getElementById('webcam').srcObject = stream;
+          } catch (retryErr) {
+            showMessage('error', 'Could not access any camera.');
+          }
+        } else {
+          showMessage('error', 'Could not start camera: ' + err.message);
+        }
+      }
+    }
+
+    // Capture image and identify
+    async function captureImage() {
+      const video = document.getElementById('webcam');
+      
+      // Check if video is ready
+      if (!video.videoWidth || !video.videoHeight) {
+        showMessage('error', 'Camera not ready. Please wait for video to start.');
+        console.error('Video not ready:', video.videoWidth, video.videoHeight);
+        return;
+      }
+      
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0);
+      
+      const imageDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+      const imageBase64 = imageDataUrl.split(',')[1];
+      
+      // Validate image data
+      if (!imageBase64 || imageBase64.length < 100) {
+        showMessage('error', 'Failed to capture image. Please try again.');
+        console.error('Invalid image data:', imageBase64?.length);
+        return;
+      }
+      
+      // Show loading state
+      document.getElementById('captureSpinner').style.display = 'inline-block';
+      document.getElementById('captureText').textContent = 'Identifying...';
+      document.getElementById('captureBtn').disabled = true;
+      
+      try {
+        const res = await fetch('/recognize', { 
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: imageBase64 })
+        });
+        
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.error || `Server error: ${res.status}`);
+        }
+        
+        const data = await res.json();
+        
+        if (data.recognized) {
+          currentOwnerId = data.match?.id || null;
+          currentStudentId = data.user_id || data.match?.face_uuid || "---";
+          studentName = data.name || "";
+          
+          document.getElementById('studentIdValue').textContent = currentStudentId;
+          document.getElementById('studentName').textContent = studentName;
+          document.getElementById('addOrderStudentId').textContent = currentStudentId;
+          document.getElementById('studentIdCard').style.display = 'block';
+          
+          showMessage('success', `Welcome, ${studentName}!`);
+          
+          if (currentOwnerId) {
+            loadParcels(currentOwnerId);
+          }
+        } else {
+          showMessage('error', 'Face not recognized. Please register first.');
+        }
+      } catch (err) {
+        console.error('Recognition error:', err);
+        showMessage('error', 'Identification failed: ' + err.message);
+      } finally {
+        document.getElementById('captureSpinner').style.display = 'none';
+        document.getElementById('captureText').textContent = 'Capture & Identify';
+        document.getElementById('captureBtn').disabled = false;
+      }
+    }
+
+    // Load student parcels
+    async function loadParcels(studentId) {
+      try {
+        const res = await fetch(`/track_orders?owner_id=${studentId}`);
+        const data = await res.json();
+        const parcels = data.parcels || [];
+        const container = document.getElementById('parcelsList');
+        const countEl = document.getElementById('parcelCount');
+        
+        countEl.textContent = parcels.length > 0 
+          ? `${parcels.length} parcel${parcels.length === 1 ? '' : 's'}`
+          : 'No parcels found';
+        
+        if (parcels.length > 0) {
+          container.innerHTML = `<div class="parcels-scroll">${parcels.map(p => createParcelCard(p)).join('')}</div>`;
+        } else {
+          container.innerHTML = `
+            <div class="empty-state">
+              <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+              </svg>
+              <p style="font-size: 0.875rem;">No parcels found</p>
+            </div>
+          `;
+        }
+      } catch (err) {
+        document.getElementById('parcelsList').innerHTML = 
+          '<div class="empty-state"><p style="color: oklch(0.65 0.22 15);">Failed to load parcels</p></div>';
+      }
+    }
+
+    // Create parcel card HTML
+    function createParcelCard(parcel) {
+      let timeInfo = '';
+      let timeBadgeClass = 'time-badge';
+      
+      if (parcel.status === 'stored' && parcel.days_remaining !== undefined) {
+        if (parcel.days_remaining <= 0) {
+          timeInfo = 'Ready for pickup NOW!';
+          timeBadgeClass += ' urgent';
+        } else if (parcel.days_remaining === 1) {
+          timeInfo = 'Ready tomorrow';
+        } else {
+          timeInfo = `Ready in ${parcel.days_remaining} days`;
+        }
+      }
+      
+      return `
+        <div class="parcel-card">
+          <div class="parcel-header">
+            <div class="tracking-code">${parcel.tracking_code}</div>
+            <span class="status-badge status-${parcel.status}">${parcel.status}</span>
+          </div>
+          <div class="parcel-details">
+            <strong>Slot:</strong> ${parcel.slot || 'N/A'}<br>
+            ${parcel.note ? `<strong>Note:</strong> ${parcel.note}<br>` : ''}
+            ${parcel.arrival_time ? `<strong>Arrived:</strong> ${new Date(parcel.arrival_time).toLocaleString()}<br>` : ''}
+            ${parcel.collected_time ? `<strong>Collected:</strong> ${new Date(parcel.collected_time).toLocaleString()}<br>` : ''}
+          </div>
+          <div class="badge-row">
+            ${parcel.storage_location ? `<span class="location-badge">${parcel.storage_location}</span>` : ''}
+            ${timeInfo ? `<span class="${timeBadgeClass}">${timeInfo}</span>` : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    // Copy student ID
+    function copyStudentId() {
+      const id = document.getElementById('studentIdValue').textContent;
+      navigator.clipboard.writeText(id).then(() => {
+        showMessage('success', 'Student ID copied to clipboard!');
+      });
+    }
+
+    // Add order
+    async function addOrder() {
+      const tracking = document.getElementById('trackingCode').value.trim();
+      const note = document.getElementById('orderNote').value.trim();
+      
+      if (!currentOwnerId) {
+        showMessage('error', 'Please identify yourself first.');
+        return;
+      }
+      if (!tracking) {
+        showMessage('error', 'Please enter a tracking code.');
+        return;
+      }
+
+      // Show loading state
+      document.getElementById('addOrderSpinner').style.display = 'inline-block';
+      document.getElementById('addOrderIcon').style.display = 'none';
+      document.getElementById('addOrderText').textContent = 'Adding...';
+      document.getElementById('addOrderBtn').disabled = true;
+
+      try {
+        const res = await fetch('/parcel/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tracking_code: tracking,
+            owner_id: currentOwnerId,
+            note: note
+          })
+        });
+        const data = await res.json();
+
+        if (data.status === 'ok') {
+          showMessage('success', `Parcel added to ${data.storage_location}, Slot ${data.slot}`);
+          document.getElementById('trackingCode').value = '';
+          document.getElementById('orderNote').value = '';
+          loadParcels(currentOwnerId);
+        } else {
+          showMessage('error', 'Failed to add parcel.');
+        }
+      } catch (err) {
+        showMessage('error', 'Failed to add parcel.');
+      } finally {
+        document.getElementById('addOrderSpinner').style.display = 'none';
+        document.getElementById('addOrderIcon').style.display = 'inline-block';
+        document.getElementById('addOrderText').textContent = 'Add Order';
+        document.getElementById('addOrderBtn').disabled = false;
+      }
+    }
+
+    // Event listeners
+    document.getElementById('cameraSelect').addEventListener('change', startCamera);
+    document.getElementById('captureBtn').addEventListener('click', captureImage);
+    document.getElementById('addOrderBtn').addEventListener('click', addOrder);
+    
+    // Initialize
+    getCameras();
+  </script>
+</body>
+</html>

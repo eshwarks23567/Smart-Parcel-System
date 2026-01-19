@@ -1,9 +1,10 @@
 import os
 import json
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, send_from_directory
 from flask_cors import CORS
+from flask_compress import Compress
 
-from models import init_db, get_session, User, Parcel, FaceSample
+from models import init_db, get_session, User, Parcel, FaceSample, TrackingVariation
 import uuid
 from face_recog import get_embedding_from_base64, find_best_match, save_base64_image, get_embedding_from_file
 from notifications import send_sms
@@ -12,9 +13,11 @@ from forecast import forecast_next_days
 import cv2
 import numpy as np
 import random
+import re
 
 app = Flask(__name__)
 CORS(app)
+Compress(app)  # Enable gzip compression for responses
 
 UPLOADS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
 os.makedirs(UPLOADS_DIR, exist_ok=True)
@@ -78,9 +81,61 @@ def generate_synthetic_samples(user_id, photo_path, face_uuid, num_samples=5):
     return created
 
 
+def generate_tracking_variations(tracking_code, num_variations=5):
+    """Generate synthetic variations of a tracking code"""
+    if not tracking_code:
+        return []
+    
+    variations = [tracking_code]  # Include original
+    code_upper = tracking_code.upper()
+    
+    # Generate variations
+    for i in range(num_variations - 1):
+        variation = code_upper
+        # Add random prefix/suffix
+        if random.random() < 0.5:
+            variation = random.choice(['TRK', 'PKG', 'SHP']) + '-' + variation
+        if random.random() < 0.5:
+            variation = variation + '-' + str(random.randint(100, 999))
+        # Random case changes for letters
+        if random.random() < 0.3:
+            variation = ''.join([c.lower() if random.random() < 0.3 else c for c in variation])
+        # Add separators
+        if random.random() < 0.4 and '-' not in variation:
+            mid = len(variation) // 2
+            variation = variation[:mid] + '-' + variation[mid:]
+        
+        if variation not in variations:
+            variations.append(variation)
+    
+    return variations
+
+
 @app.route('/')
 def index():
+    return render_template('home.html')
+
+
+@app.route('/admin')
+def admin():
     return render_template('index.html')
+
+
+@app.route('/student')
+def student():
+    return render_template('student.html')
+
+
+@app.route('/staff')
+def staff():
+    return render_template('staff.html')
+
+
+@app.route('/favicon.ico')
+def favicon():
+    """Serve favicon or return 204 No Content if not available"""
+    # Return a simple 204 response to avoid 404 errors in browser console
+    return '', 204
 
 
 @app.route('/register', methods=['POST'])
@@ -133,15 +188,28 @@ def recognize():
     session = get_session()
     users = session.query(User).all()
     candidates = []
+    
+    # Check against both main user embedding AND all face samples
     for u in users:
+        # Add main user embedding
         try:
             ue = json.loads(u.embedding_json)
             candidates.append((u.id, u.name, ue))
         except Exception:
-            continue
+            pass
+        
+        # Add all face sample embeddings for this user
+        samples = session.query(FaceSample).filter_by(user_id=u.id).all()
+        for sample in samples:
+            try:
+                se = json.loads(sample.embedding_json)
+                candidates.append((u.id, u.name, se))
+            except Exception:
+                continue
 
     # threshold: tune this value for your model. Higher -> stricter matching.
-    threshold = float(request.args.get('threshold', 0.5))
+    # Lowered to 0.35 to handle different cameras better
+    threshold = float(request.args.get('threshold', 0.35))
     match = find_best_match(emb, candidates, threshold=threshold)
     if match:
         # include face_uuid for matched user
@@ -149,15 +217,23 @@ def recognize():
         u = session.query(User).filter(User.id == match['id']).first()
         if u and getattr(u, 'face_uuid', None):
             match['face_uuid'] = u.face_uuid
-        return jsonify({'status': 'ok', 'match': match})
+        # Return consistent format for both old and new clients
+        return jsonify({
+            'status': 'ok',
+            'recognized': True,
+            'match': match,
+            'user_id': match['face_uuid'] if 'face_uuid' in match else match['id'],
+            'name': match['name']
+        })
     else:
-        return jsonify({'status': 'not_found'}), 404
+        return jsonify({'status': 'not_found', 'recognized': False}), 404
 
 
 @app.route('/parcel/add', methods=['POST'])
 def parcel_add():
     """Add a parcel and assign a storage slot. Accepts JSON: tracking_code (optional), owner_id (optional), note.
     If owner_id not provided, parcel will be created without owner and can be assigned later.
+    Automatically generates synthetic tracking code variations and assigns storage location.
     """
     data = request.get_json(force=True)
     tracking = data.get('tracking_code')
@@ -176,11 +252,44 @@ def parcel_add():
             next_slot = f"S{(last.id or 0) + 1}"
     else:
         next_slot = '1'
+    
+    # Generate storage location
+    storage_locations = ["Shelf A-{}".format(i) for i in range(1, 6)] + \
+                       ["Shelf B-{}".format(i) for i in range(1, 6)] + \
+                       ["Locker {}".format(i) for i in range(10, 20)] + \
+                       ["Bay C-{}".format(i) for i in range(1, 4)]
+    storage_location = random.choice(storage_locations)
+    
+    # Random estimated delivery days (1-10 days)
+    estimated_days = random.randint(1, 10)
 
-    p = Parcel(tracking_code=tracking, owner_id=owner_id, slot=next_slot, note=note)
+    p = Parcel(
+        tracking_code=tracking, 
+        owner_id=owner_id, 
+        slot=next_slot, 
+        storage_location=storage_location,
+        estimated_delivery_days=estimated_days,
+        note=note
+    )
     session.add(p)
     session.commit()
-    return jsonify({'status': 'ok', 'parcel_id': p.id, 'slot': p.slot})
+    
+    # Generate synthetic tracking code variations
+    if tracking:
+        variations = generate_tracking_variations(tracking, num_variations=5)
+        for var_code in variations:
+            tv = TrackingVariation(parcel_id=p.id, original_code=tracking, variation_code=var_code)
+            session.add(tv)
+        session.commit()
+        print(f'Generated {len(variations)} tracking variations for parcel {p.id}')
+    
+    return jsonify({
+        'status': 'ok', 
+        'parcel_id': p.id, 
+        'slot': p.slot,
+        'storage_location': storage_location,
+        'estimated_delivery_days': estimated_days
+    })
 
 
 @app.route('/parcel/collect', methods=['POST'])
@@ -203,14 +312,27 @@ def parcel_collect():
     session = get_session()
     users = session.query(User).all()
     candidates = []
+    
+    # Check against both main user embedding AND all face samples
     for u in users:
+        # Add main user embedding
         try:
             ue = json.loads(u.embedding_json)
             candidates.append((u.id, u.name, ue))
         except Exception:
-            continue
+            pass
+        
+        # Add all face sample embeddings for this user
+        samples = session.query(FaceSample).filter_by(user_id=u.id).all()
+        for sample in samples:
+            try:
+                se = json.loads(sample.embedding_json)
+                candidates.append((u.id, u.name, se))
+            except Exception:
+                continue
 
-    match = find_best_match(emb, candidates, threshold=float(request.args.get('threshold', 0.5)))
+    # Lowered threshold to 0.35 for better camera compatibility
+    match = find_best_match(emb, candidates, threshold=float(request.args.get('threshold', 0.35)))
     if not match:
         return jsonify({'status': 'not_found'}), 404
 
@@ -285,7 +407,7 @@ def status():
 
 @app.route('/track/<face_uuid>', methods=['GET'])
 def track_orders(face_uuid):
-    """Track parcels by face_uuid. Returns user info and all their parcels."""
+    """Track parcels by face_uuid. Returns user info and all their parcels with delivery estimates."""
     session = get_session()
     user = session.query(User).filter(User.face_uuid == face_uuid).first()
     if not user:
@@ -295,11 +417,29 @@ def track_orders(face_uuid):
     parcels = session.query(Parcel).filter(Parcel.owner_id == user.id).all()
     parcel_list = []
     for p in parcels:
+        # Calculate days since arrival
+        days_in_storage = 0
+        if p.arrival_time:
+            delta = datetime.utcnow() - p.arrival_time
+            days_in_storage = delta.days
+        
+        # Calculate time remaining for pickup
+        days_remaining = None
+        pickup_deadline = None
+        if p.estimated_delivery_days and p.status == 'stored':
+            days_remaining = p.estimated_delivery_days - days_in_storage
+            if days_remaining < 0:
+                days_remaining = 0
+        
         parcel_list.append({
             'id': p.id,
             'tracking_code': p.tracking_code,
             'status': p.status,
             'slot': p.slot,
+            'storage_location': p.storage_location,
+            'estimated_delivery_days': p.estimated_delivery_days,
+            'days_in_storage': days_in_storage,
+            'days_remaining': days_remaining,
             'arrival_time': p.arrival_time.isoformat() if p.arrival_time else None,
             'collected_time': p.collected_time.isoformat() if p.collected_time else None,
             'note': p.note
@@ -315,6 +455,150 @@ def track_orders(face_uuid):
         },
         'parcels': parcel_list,
         'total_parcels': len(parcel_list)
+    })
+
+
+@app.route('/search', methods=['POST'])
+def search_parcel():
+    """Search for parcel by tracking code and face_uuid.
+    Matches against both original and synthetic tracking code variations.
+    Body: { tracking_code: string, face_uuid: string }
+    """
+    data = request.get_json(force=True)
+    tracking_input = data.get('tracking_code', '').strip().upper()
+    face_uuid = data.get('face_uuid', '').strip().upper()
+    
+    if not tracking_input or not face_uuid:
+        return jsonify({'error': 'Both tracking_code and face_uuid are required'}), 400
+    
+    session = get_session()
+    
+    # Find user by face_uuid
+    user = session.query(User).filter(User.face_uuid == face_uuid).first()
+    if not user:
+        return jsonify({'error': 'Invalid face UUID'}), 404
+    
+    # Search for matching tracking variation
+    tracking_var = session.query(TrackingVariation).filter(
+        TrackingVariation.variation_code.ilike(f'%{tracking_input}%')
+    ).first()
+    
+    if not tracking_var:
+        # Try direct match on parcel tracking_code
+        parcel = session.query(Parcel).filter(
+            Parcel.tracking_code.ilike(f'%{tracking_input}%'),
+            Parcel.owner_id == user.id
+        ).first()
+    else:
+        # Get parcel from variation
+        parcel = session.query(Parcel).filter(
+            Parcel.id == tracking_var.parcel_id,
+            Parcel.owner_id == user.id
+        ).first()
+    
+    if not parcel:
+        return jsonify({
+            'status': 'not_found',
+            'message': 'No parcel found with this tracking code for your account'
+        }), 404
+    
+    return jsonify({
+        'status': 'found',
+        'user': {
+            'id': user.id,
+            'name': user.name,
+            'face_uuid': user.face_uuid
+        },
+        'parcel': {
+            'id': parcel.id,
+            'tracking_code': parcel.tracking_code,
+            'status': parcel.status,
+            'slot': parcel.slot,
+            'arrival_time': parcel.arrival_time.isoformat() if parcel.arrival_time else None,
+            'collected_time': parcel.collected_time.isoformat() if parcel.collected_time else None,
+            'note': parcel.note
+        }
+    })
+
+
+@app.route('/track_orders', methods=['GET'])
+def track_orders_all():
+    """Get all parcels or filter by owner_id. Query params: owner_id (optional)"""
+    owner_id = request.args.get('owner_id')
+    session = get_session()
+    
+    if owner_id:
+        # Get parcels for specific owner
+        parcels = session.query(Parcel).filter(Parcel.owner_id == owner_id).all()
+    else:
+        # Get all parcels
+        parcels = session.query(Parcel).all()
+    
+    parcel_list = []
+    for p in parcels:
+        # Calculate days since arrival
+        days_in_storage = 0
+        if p.arrival_time:
+            delta = datetime.utcnow() - p.arrival_time
+            days_in_storage = delta.days
+        
+        # Calculate time remaining for pickup
+        days_remaining = None
+        if p.estimated_delivery_days and p.status == 'stored':
+            days_remaining = p.estimated_delivery_days - days_in_storage
+            if days_remaining < 0:
+                days_remaining = 0
+        
+        parcel_list.append({
+            'id': p.id,
+            'tracking_code': p.tracking_code,
+            'owner_id': p.owner_id,
+            'status': p.status,
+            'slot': p.slot,
+            'storage_location': p.storage_location,
+            'estimated_delivery_days': p.estimated_delivery_days,
+            'days_in_storage': days_in_storage,
+            'days_remaining': days_remaining,
+            'arrival_time': p.arrival_time.isoformat() if p.arrival_time else None,
+            'collected_time': p.collected_time.isoformat() if p.collected_time else None,
+            'note': p.note
+        })
+    
+    return jsonify({
+        'status': 'ok',
+        'parcels': parcel_list,
+        'total': len(parcel_list)
+    })
+
+
+@app.route('/parcel/mark_collected', methods=['POST'])
+def mark_collected():
+    """Mark a parcel as collected. Body: { parcel_id: int }"""
+    data = request.get_json(force=True)
+    parcel_id = data.get('parcel_id')
+    
+    if not parcel_id:
+        return jsonify({'error': 'parcel_id required'}), 400
+    
+    session = get_session()
+    parcel = session.query(Parcel).filter(Parcel.id == int(parcel_id)).first()
+    
+    if not parcel:
+        return jsonify({'error': 'Parcel not found'}), 404
+    
+    if parcel.status == 'collected':
+        return jsonify({'error': 'Parcel already collected'}), 400
+    
+    parcel.status = 'collected'
+    parcel.collected_time = datetime.utcnow()
+    session.commit()
+    
+    return jsonify({
+        'status': 'ok',
+        'message': 'Parcel marked as collected',
+        'parcel_id': parcel.id,
+        'tracking_code': parcel.tracking_code,
+        'collected_time': parcel.collected_time.isoformat()
     })
 
 

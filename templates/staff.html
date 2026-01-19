@@ -1,0 +1,1556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Staff Portal - SmartParcel</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: oklch(0.12 0.01 260);
+      color: oklch(0.96 0 0);
+      line-height: 1.6;
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Animated Background Blobs */
+    .bg-blob {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.25;
+      pointer-events: none;
+      z-index: 0;
+      animation: float 18s ease-in-out infinite;
+    }
+
+    .blob-1 {
+      width: 400px;
+      height: 400px;
+      background: oklch(0.6 0.18 165);
+      top: -150px;
+      right: -150px;
+      animation-delay: 0s;
+    }
+
+    .blob-2 {
+      width: 350px;
+      height: 350px;
+      background: oklch(0.55 0.22 280);
+      bottom: -200px;
+      left: -200px;
+      animation-delay: -9s;
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translate(0, 0) scale(1);
+      }
+      33% {
+        transform: translate(20px, -40px) scale(1.1);
+      }
+      66% {
+        transform: translate(-15px, 15px) scale(0.9);
+      }
+    }
+    
+    /* Header */
+    header {
+      border-bottom: 1px solid oklch(0.26 0.01 260 / 0.5);
+      background: oklch(0.16 0.01 260 / 0.3);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    
+    .header-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    .back-button {
+      color: oklch(0.7 0.01 260);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: color 0.2s;
+      font-size: 0.875rem;
+      padding: 0.5rem;
+      border-radius: 0.5rem;
+    }
+    
+    .back-button:hover {
+      color: oklch(0.96 0 0);
+      background: oklch(0.2 0.01 260 / 0.5);
+    }
+    
+    .header-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    .header-icon {
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 0.75rem;
+      background: oklch(0.7 0.17 165 / 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: oklch(0.7 0.17 165);
+    }
+    
+    h1 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: oklch(0.96 0 0);
+      margin-bottom: 0.125rem;
+    }
+    
+    .subtitle {
+      color: oklch(0.7 0.01 260);
+      font-size: 0.75rem;
+    }
+    
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+    
+    /* Alert Messages */
+    .alert {
+      padding: 1rem;
+      border-radius: 0.75rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      animation: slideIn 0.3s ease-out;
+    }
+    
+    .alert-success {
+      background: oklch(0.7 0.17 155 / 0.15);
+      border: 1px solid oklch(0.7 0.17 155 / 0.3);
+      color: oklch(0.7 0.17 155);
+    }
+    
+    .alert-error {
+      background: oklch(0.65 0.22 15 / 0.15);
+      border: 1px solid oklch(0.65 0.22 15 / 0.3);
+      color: oklch(0.65 0.22 15);
+    }
+    
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    /* Tabs */
+    .tabs {
+      margin-bottom: 2rem;
+    }
+    
+    .tabs-list {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      background: oklch(0.16 0.01 260);
+      border: 1px solid oklch(0.26 0.01 260 / 0.5);
+      border-radius: 0.75rem;
+      padding: 0.25rem;
+      gap: 0.25rem;
+    }
+    
+    .tab-trigger {
+      padding: 0.75rem 1rem;
+      border: none;
+      background: transparent;
+      color: oklch(0.7 0.01 260);
+      border-radius: 0.5rem;
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    
+    .tab-trigger:hover {
+      background: oklch(0.2 0.01 260 / 0.5);
+      color: oklch(0.96 0 0);
+    }
+    
+    .tab-trigger.active {
+      background: oklch(0.65 0.19 250);
+      color: oklch(0.96 0 0);
+    }
+    
+    .tab-content {
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    /* Grid Layout */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2rem;
+    }
+    
+    .grid-3 {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    
+    @media (max-width: 1024px) {
+      .grid, .grid-3 {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    /* Cards */
+    .card {
+      background: oklch(0.16 0.01 260 / 0.5);
+      backdrop-filter: blur(24px);
+      border: 1px solid oklch(0.26 0.01 260 / 0.5);
+      border-radius: 1rem;
+      overflow: hidden;
+    }
+    
+    .card-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid oklch(0.26 0.01 260 / 0.5);
+    }
+    
+    .card-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: oklch(0.96 0 0);
+      margin-bottom: 0.375rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .card-description {
+      color: oklch(0.7 0.01 260);
+      font-size: 0.875rem;
+    }
+    
+    .card-content {
+      padding: 1.5rem;
+    }
+    
+    /* Form Elements */
+    label {
+      display: block;
+      color: oklch(0.7 0.01 260);
+      margin-bottom: 0.5rem;
+      font-size: 0.875rem;
+    }
+    
+    select, input, textarea {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background: oklch(0.2 0.01 260 / 0.5);
+      border: 1px solid oklch(0.3 0.01 260 / 0.5);
+      border-radius: 0.5rem;
+      color: oklch(0.96 0 0);
+      font-size: 0.9375rem;
+      margin-bottom: 1rem;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    
+    select:focus, input:focus, textarea:focus {
+      outline: none;
+      border-color: oklch(0.65 0.19 250);
+      box-shadow: 0 0 0 3px oklch(0.65 0.19 250 / 0.1);
+      background: oklch(0.22 0.01 260 / 0.5);
+    }
+    
+    textarea {
+      resize: none;
+      min-height: 80px;
+    }
+    
+    /* Video */
+    video {
+      width: 100%;
+      border-radius: 0.75rem;
+      background: oklch(0.08 0.01 260);
+      margin-bottom: 1rem;
+      border: 1px solid oklch(0.26 0.01 260 / 0.5);
+      aspect-ratio: 16/9;
+    }
+    
+    /* Buttons */
+    button {
+      padding: 0.75rem 1.5rem;
+      background: oklch(0.65 0.19 250);
+      color: oklch(0.96 0 0);
+      border: none;
+      border-radius: 0.5rem;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    
+    button:hover:not(:disabled) {
+      background: oklch(0.7 0.19 250);
+      box-shadow: 0 4px 12px oklch(0.65 0.19 250 / 0.3);
+    }
+    
+    button:active:not(:disabled) {
+      transform: scale(0.98);
+    }
+    
+    button:disabled {
+      background: oklch(0.3 0.01 260);
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+    
+    button.w-full {
+      width: 100%;
+    }
+    
+    button.btn-outline {
+      background: transparent;
+      border: 1px solid oklch(0.3 0.01 260 / 0.5);
+      color: oklch(0.96 0 0);
+    }
+    
+    button.btn-outline.active {
+      background: oklch(0.65 0.19 250);
+      border-color: oklch(0.65 0.19 250);
+    }
+    
+    button.btn-sm {
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+    }
+    
+    button.btn-collect {
+      background: oklch(0.7 0.17 155);
+    }
+    
+    button.btn-collect:hover:not(:disabled) {
+      background: oklch(0.75 0.17 155);
+      box-shadow: 0 4px 12px oklch(0.7 0.17 155 / 0.3);
+    }
+    
+    /* Student ID Card */
+    .student-id-card {
+      background: linear-gradient(135deg, oklch(0.65 0.19 250) 0%, oklch(0.7 0.17 165) 100%);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: 1px solid oklch(0.65 0.19 250 / 0.3);
+      text-align: center;
+    }
+    
+    .student-id-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px oklch(0.65 0.19 250 / 0.3);
+    }
+    
+    .id-label {
+      font-size: 0.75rem;
+      color: oklch(0.96 0 0 / 0.7);
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-weight: 600;
+    }
+    
+    .id-value {
+      font-size: 1.875rem;
+      font-weight: 700;
+      color: oklch(0.96 0 0);
+      letter-spacing: 0.15em;
+      font-family: 'Courier New', monospace;
+    }
+    
+    .student-name {
+      margin-top: 0.5rem;
+      font-size: 1.125rem;
+      font-weight: 500;
+      color: oklch(0.96 0 0 / 0.9);
+    }
+    
+    /* Stat Cards */
+    .stat-card {
+      text-align: center;
+      padding: 2rem 1.5rem;
+    }
+    
+    .stat-value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+      color: oklch(0.7 0.01 260);
+      font-size: 0.875rem;
+    }
+    
+    .stat-card.primary {
+      background: oklch(0.65 0.19 250 / 0.2);
+      border-color: oklch(0.65 0.19 250 / 0.3);
+    }
+    
+    .stat-card.primary .stat-value {
+      color: oklch(0.65 0.19 250);
+    }
+    
+    .stat-card.accent {
+      background: oklch(0.7 0.17 165 / 0.2);
+      border-color: oklch(0.7 0.17 165 / 0.3);
+    }
+    
+    .stat-card.accent .stat-value {
+      color: oklch(0.7 0.17 165);
+    }
+    
+    .stat-card.warning {
+      background: oklch(0.75 0.15 75 / 0.2);
+      border-color: oklch(0.75 0.15 75 / 0.3);
+    }
+    
+    .stat-card.warning .stat-value {
+      color: oklch(0.75 0.15 75);
+    }
+    
+    /* Parcel Cards */
+    .parcel-card {
+      background: oklch(0.2 0.01 260 / 0.5);
+      backdrop-filter: blur(12px);
+      border: 1px solid oklch(0.26 0.01 260 / 0.5);
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+      transition: all 0.3s;
+    }
+    
+    .parcel-card:hover {
+      border-color: oklch(0.65 0.19 250 / 0.5);
+      box-shadow: 0 8px 24px oklch(0.65 0.19 250 / 0.15);
+      transform: translateY(-2px);
+    }
+    
+    .parcel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid oklch(0.26 0.01 260 / 0.5);
+    }
+    
+    .tracking-code {
+      font-weight: 600;
+      color: oklch(0.96 0 0);
+      font-size: 1rem;
+      font-family: 'Courier New', monospace;
+    }
+    
+    .status-badge {
+      padding: 0.375rem 0.875rem;
+      border-radius: 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    .status-stored {
+      background: oklch(0.65 0.19 250 / 0.2);
+      color: oklch(0.65 0.19 250);
+      border: 1px solid oklch(0.65 0.19 250 / 0.3);
+    }
+    
+    .status-collected {
+      background: oklch(0.7 0.17 155 / 0.2);
+      color: oklch(0.7 0.17 155);
+      border: 1px solid oklch(0.7 0.17 155 / 0.3);
+    }
+    
+    .parcel-details {
+      color: oklch(0.7 0.01 260);
+      font-size: 0.875rem;
+      line-height: 1.8;
+    }
+    
+    .parcel-details strong {
+      color: oklch(0.9 0 0);
+      font-weight: 600;
+    }
+    
+    .badge-row {
+      margin-top: 1rem;
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    
+    .location-badge {
+      background: oklch(0.3 0.01 260 / 0.5);
+      color: oklch(0.8 0.01 260);
+      padding: 0.375rem 0.75rem;
+      border-radius: 0.5rem;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      border: 1px solid oklch(0.35 0.01 260 / 0.5);
+    }
+    
+    /* Shelf Grid */
+    .shelf-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 0.75rem;
+    }
+    
+    .shelf-item {
+      padding: 1rem;
+      border-radius: 0.75rem;
+      text-align: center;
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+    
+    .shelf-item:hover {
+      transform: scale(1.05);
+    }
+    
+    .shelf-item.ready {
+      background: oklch(0.7 0.17 155 / 0.2);
+      border: 1px solid oklch(0.7 0.17 155 / 0.3);
+    }
+    
+    .shelf-item.waiting {
+      background: oklch(0.75 0.15 75 / 0.2);
+      border: 1px solid oklch(0.75 0.15 75 / 0.3);
+    }
+    
+    .shelf-slot {
+      font-weight: 600;
+      font-size: 0.875rem;
+      margin-bottom: 0.25rem;
+    }
+    
+    .shelf-tracking {
+      font-size: 0.75rem;
+      color: oklch(0.7 0.01 260);
+      font-family: 'Courier New', monospace;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .shelf-badge {
+      display: inline-block;
+      margin-top: 0.5rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.375rem;
+      font-size: 0.625rem;
+      font-weight: 600;
+      border: 1px solid currentColor;
+      opacity: 0.8;
+    }
+    
+    /* Table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    thead tr {
+      border-bottom: 1px solid oklch(0.26 0.01 260);
+    }
+    
+    th {
+      padding-bottom: 0.75rem;
+      text-align: left;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: oklch(0.7 0.01 260);
+    }
+    
+    tbody tr {
+      border-bottom: 1px solid oklch(0.26 0.01 260 / 0.5);
+      transition: background 0.2s;
+    }
+    
+    tbody tr:hover {
+      background: oklch(0.2 0.01 260 / 0.3);
+    }
+    
+    td {
+      padding: 0.75rem 0;
+      font-size: 0.875rem;
+    }
+    
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1.25rem;
+      color: oklch(0.6 0.01 260);
+    }
+    
+    .empty-icon {
+      width: 3rem;
+      height: 3rem;
+      margin: 0 auto 1rem;
+      opacity: 0.5;
+      color: oklch(0.5 0.01 260);
+    }
+    
+    /* Spinner */
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .spinner {
+      border: 2px solid oklch(0.3 0.01 260);
+      border-top: 2px solid oklch(0.65 0.19 250);
+      border-radius: 50%;
+      width: 1rem;
+      height: 1rem;
+      animation: spin 0.7s linear infinite;
+      display: inline-block;
+    }
+    
+    .scrollable {
+      max-height: 500px;
+      overflow-y: auto;
+      padding-right: 0.5rem;
+    }
+    
+    .scrollable::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    .scrollable::-webkit-scrollbar-track {
+      background: oklch(0.2 0.01 260 / 0.3);
+      border-radius: 3px;
+    }
+    
+    .scrollable::-webkit-scrollbar-thumb {
+      background: oklch(0.35 0.01 260);
+      border-radius: 3px;
+    }
+    
+    .scrollable::-webkit-scrollbar-thumb:hover {
+      background: oklch(0.45 0.01 260);
+    }
+    
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .filter-bar input {
+      width: 300px;
+      margin-bottom: 0;
+    }
+    
+    .filter-buttons {
+      display: flex;
+      gap: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <!-- Animated Background Blobs -->
+  <div class="bg-blob blob-1"></div>
+  <div class="bg-blob blob-2"></div>
+
+  <!-- Header -->
+  <header>
+    <div class="header-content">
+      <a href="/" class="back-button">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="m15 18-6-6 6-6"/>
+        </svg>
+        Back
+      </a>
+      <div class="header-info">
+        <div class="header-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+          </svg>
+        </div>
+        <div>
+          <h1>Staff Portal</h1>
+          <p class="subtitle">Parcel Management System</p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Alert Container -->
+    <div id="alertContainer"></div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <div class="tabs-list">
+        <button class="tab-trigger active" data-tab="register">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <line x1="19" y1="8" x2="19" y2="14"/>
+            <line x1="22" y1="11" x2="16" y2="11"/>
+          </svg>
+          Register
+        </button>
+        <button class="tab-trigger" data-tab="receive">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+            <line x1="12" y1="8" x2="12" y2="16"/>
+            <line x1="8" y1="12" x2="16" y2="12"/>
+          </svg>
+          Receive
+        </button>
+        <button class="tab-trigger" data-tab="handover">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 12h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 14"/>
+            <path d="m7 18 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9"/>
+            <path d="m2 13 6 6"/>
+          </svg>
+          Handover
+        </button>
+        <button class="tab-trigger" data-tab="shelf">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <path d="M3 9h18"/>
+            <path d="M3 15h18"/>
+            <path d="M9 3v18"/>
+            <path d="M15 3v18"/>
+          </svg>
+          Shelf
+        </button>
+        <button class="tab-trigger" data-tab="parcels">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="8" y1="6" x2="21" y2="6"/>
+            <line x1="8" y1="12" x2="21" y2="12"/>
+            <line x1="8" y1="18" x2="21" y2="18"/>
+            <line x1="3" y1="6" x2="3.01" y2="6"/>
+            <line x1="3" y1="12" x2="3.01" y2="12"/>
+            <line x1="3" y1="18" x2="3.01" y2="18"/>
+          </svg>
+          All Parcels
+        </button>
+      </div>
+
+      <!-- Register Tab -->
+      <div class="tab-content active" id="tab-register" style="margin-top: 1.5rem;">
+        <div class="grid">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Register New Student</div>
+              <p class="card-description">Capture face and register student in the system</p>
+            </div>
+            <div class="card-content">
+              <label for="studentName">Student Name *</label>
+              <input id="studentName" type="text" placeholder="Enter student name">
+
+              <label for="studentPhone">Phone Number</label>
+              <input id="studentPhone" type="tel" placeholder="Enter phone number (optional)">
+
+              <label for="regCameraSelect">Select Camera:</label>
+              <select id="regCameraSelect"></select>
+              
+              <video id="regWebcam" autoplay playsinline muted></video>
+              <button id="registerBtn" class="w-full">
+                <span id="registerSpinner" style="display:none;" class="spinner"></span>
+                <span id="registerText">Register Student</span>
+              </button>
+            </div>
+          </div>
+
+          <div id="registeredCard" style="display:none;">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                  Registration Complete
+                </div>
+              </div>
+              <div class="card-content">
+                <div class="student-id-card" onclick="copyId('registeredId')">
+                  <div class="id-label">STUDENT ID</div>
+                  <div class="id-value" id="registeredId">------</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Receive Tab -->
+      <div class="tab-content" id="tab-receive" style="margin-top: 1.5rem;">
+        <div class="grid">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Store New Parcel</div>
+              <p class="card-description">Add a parcel to storage system</p>
+            </div>
+            <div class="card-content">
+              <label for="trackingCode">Tracking Code</label>
+              <input id="trackingCode" type="text" placeholder="Auto-generated if empty">
+
+              <label for="ownerId">Student ID</label>
+              <input id="ownerId" type="text" placeholder="Enter student ID (optional)" style="font-family: 'Courier New', monospace;">
+
+              <label for="parcelNote">Note</label>
+              <textarea id="parcelNote" placeholder="Optional notes" rows="3"></textarea>
+
+              <button id="addParcelBtn" class="w-full">
+                <span id="addParcelSpinner" style="display:none;" class="spinner"></span>
+                <span id="addParcelText">Store Parcel</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Recently Stored</div>
+              <p class="card-description">Last 5 parcels added to storage</p>
+            </div>
+            <div class="card-content">
+              <div id="recentParcels">
+                <div class="empty-state">
+                  <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                  </svg>
+                  <p style="font-size: 0.875rem;">No recent parcels</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Handover Tab -->
+      <div class="tab-content" id="tab-handover" style="margin-top: 1.5rem;">
+        <div class="grid">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Verify Student</div>
+              <p class="card-description">Scan student face to verify identity</p>
+            </div>
+            <div class="card-content">
+              <label for="handoverCameraSelect">Select Camera:</label>
+              <select id="handoverCameraSelect"></select>
+              
+              <video id="handoverWebcam" autoplay playsinline muted></video>
+              <button id="verifyBtn" class="w-full">
+                <span id="verifySpinner" style="display:none;" class="spinner"></span>
+                <span id="verifyText">Verify Student</span>
+              </button>
+
+              <div id="verifiedCard" style="display:none; margin-top: 1rem;">
+                <div class="student-id-card" onclick="copyId('verifiedId')">
+                  <div class="id-label">VERIFIED STUDENT</div>
+                  <div class="id-value" id="verifiedId">------</div>
+                  <div class="student-name" id="verifiedName"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Student's Parcels</div>
+              <p class="card-description" id="handoverDesc">Verify student to view parcels</p>
+            </div>
+            <div class="card-content">
+              <div id="studentParcels">
+                <div class="empty-state">
+                  <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 12h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 14"/>
+                    <path d="m7 18 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9"/>
+                    <path d="m2 13 6 6"/>
+                  </svg>
+                  <p style="font-size: 0.875rem;">Verify student to see their parcels</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Shelf Tab -->
+      <div class="tab-content" id="tab-shelf" style="margin-top: 3rem;">
+        <div class="grid grid-3" style="margin-bottom: 1.5rem;">
+          <div class="card stat-card primary">
+            <div class="stat-value" id="statTotal">0</div>
+            <div class="stat-label">Total Parcels</div>
+          </div>
+          <div class="card stat-card accent">
+            <div class="stat-value" id="statStored">0</div>
+            <div class="stat-label">Currently Stored</div>
+          </div>
+          <div class="card stat-card warning">
+            <div class="stat-value" id="statReady">0</div>
+            <div class="stat-label">Ready for Pickup</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Storage Grid</div>
+            <p class="card-description">Visual overview of all stored parcels</p>
+          </div>
+          <div class="card-content">
+            <div id="shelfGrid" class="shelf-grid">
+              <div class="empty-state">
+                <p style="font-size: 0.875rem;">No parcels in storage</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- All Parcels Tab -->
+      <div class="tab-content" id="tab-parcels" style="margin-top: 1.5rem;">
+        <div class="card">
+          <div class="card-header" style="border-bottom: none;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap;">
+              <div>
+                <div class="card-title">All Parcels</div>
+                <p class="card-description">Complete parcel database</p>
+              </div>
+              <div class="filter-bar">
+                <input id="searchQuery" type="text" placeholder="Search..." style="width: 250px;">
+                <div class="filter-buttons">
+                  <button class="btn-outline btn-sm active" data-filter="all">All</button>
+                  <button class="btn-outline btn-sm" data-filter="stored">Stored</button>
+                  <button class="btn-outline btn-sm" data-filter="collected">Collected</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-content">
+            <div style="overflow-x: auto;">
+              <table id="parcelsTable">
+                <thead>
+                  <tr>
+                    <th>Tracking</th>
+                    <th>Location</th>
+                    <th>Slot</th>
+                    <th>Status</th>
+                    <th>Arrival</th>
+                  </tr>
+                </thead>
+                <tbody id="parcelsTableBody">
+                  <tr>
+                    <td colspan="5" style="text-align: center; padding: 3rem; color: oklch(0.6 0.01 260);">
+                      No parcels found
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // State
+    let regStream = null;
+    let handoverStream = null;
+    let verifiedStudentId = null;
+    let verifiedStudentName = "";
+    let allParcels = [];
+    let currentFilter = "all";
+    let searchQuery = "";
+
+    // Show message
+    function showMessage(type, text) {
+      const container = document.getElementById('alertContainer');
+      const alert = document.createElement('div');
+      alert.className = `alert alert-${type}`;
+      alert.innerHTML = `
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <span>${text}</span>
+      `;
+      container.appendChild(alert);
+      setTimeout(() => alert.remove(), 4000);
+    }
+
+    // Tab switching
+    document.querySelectorAll('.tab-trigger').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tab = btn.dataset.tab;
+        
+        // Update buttons
+        document.querySelectorAll('.tab-trigger').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        // Update content
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.getElementById('tab-' + tab).classList.add('active');
+        
+        // Load data for specific tabs
+        if (tab === 'receive' || tab === 'parcels' || tab === 'shelf') {
+          loadAllParcels();
+        }
+      });
+    });
+
+    // Camera setup
+    async function getCameras(selectId) {
+      // Check if browser supports camera API
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        showMessage('error', 'Camera not supported in this browser. Please use Chrome, Edge, or Firefox.');
+        console.error('MediaDevices API not supported. Browser:', navigator.userAgent);
+        console.error('Protocol:', location.protocol, 'Hostname:', location.hostname);
+        return;
+      }
+      
+      // Check if page is served securely (HTTPS or localhost)
+      const isSecure = location.protocol === 'https:' || 
+                      location.hostname === 'localhost' || 
+                      location.hostname === '127.0.0.1' ||
+                      location.hostname.startsWith('192.168.') ||
+                      location.hostname.startsWith('10.');
+      
+      if (!isSecure) {
+        showMessage('error', 'Camera requires HTTPS or localhost. Current: ' + location.protocol + '//' + location.hostname);
+        console.error('Camera requires secure context. Current:', location.href);
+        return;
+      }
+      
+      try {
+        // Request permission first to get device labels
+        await navigator.mediaDevices.getUserMedia({ video: true })
+          .then(stream => stream.getTracks().forEach(track => track.stop()));
+        
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter(d => d.kind === 'videoinput');
+        const sel = document.getElementById(selectId);
+        sel.innerHTML = '';
+        
+        if (videoDevices.length === 0) {
+          showMessage('error', 'No cameras found. Please connect a camera and refresh.');
+          return;
+        }
+        
+        videoDevices.forEach((dev, idx) => {
+          const opt = document.createElement('option');
+          opt.value = dev.deviceId;
+          opt.textContent = dev.label || `Camera ${idx + 1}`;
+          sel.appendChild(opt);
+        });
+      } catch (err) {
+        console.error('Camera access error:', err);
+        if (err.name === 'NotAllowedError') {
+          showMessage('error', 'Camera permission denied. Please allow camera access.');
+        } else if (err.name === 'NotFoundError') {
+          showMessage('error', 'No camera found. Please connect a camera.');
+        } else {
+          showMessage('error', 'Could not access cameras: ' + err.message);
+        }
+      }
+    }
+
+    async function startCamera(videoId, selectId, streamVar) {
+      // Check if browser supports camera API
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        showMessage('error', 'Camera not supported in this browser.');
+        return;
+      }
+      
+      if (streamVar) {
+        streamVar.getTracks().forEach(t => t.stop());
+      }
+      const sel = document.getElementById(selectId);
+      const deviceId = sel.value;
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { 
+            deviceId: deviceId ? { exact: deviceId } : undefined,
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          }
+        });
+        
+        if (videoId === 'regWebcam') regStream = stream;
+        if (videoId === 'handoverWebcam') handoverStream = stream;
+        
+        const video = document.getElementById(videoId);
+        video.srcObject = stream;
+        
+        // Ensure video plays
+        video.onloadedmetadata = () => {
+          video.play().catch(err => {
+            console.error('Video play error:', err);
+            showMessage('error', 'Could not start video playback');
+          });
+        };
+      } catch (err) {
+        console.error('Camera start error:', err);
+        if (err.name === 'NotAllowedError') {
+          showMessage('error', 'Camera permission denied. Please allow camera access.');
+        } else if (err.name === 'NotFoundError') {
+          showMessage('error', 'Selected camera not found. Trying default camera...');
+          // Try with default camera
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            if (videoId === 'regWebcam') regStream = stream;
+            if (videoId === 'handoverWebcam') handoverStream = stream;
+            document.getElementById(videoId).srcObject = stream;
+          } catch (retryErr) {
+            showMessage('error', 'Could not access any camera.');
+          }
+        } else {
+          showMessage('error', 'Could not start camera: ' + err.message);
+        }
+      }
+    }
+
+    // Initialize cameras
+    getCameras('regCameraSelect').then(() => startCamera('regWebcam', 'regCameraSelect', regStream));
+    getCameras('handoverCameraSelect').then(() => startCamera('handoverWebcam', 'handoverCameraSelect', handoverStream));
+    
+    document.getElementById('regCameraSelect').addEventListener('change', () => 
+      startCamera('regWebcam', 'regCameraSelect', regStream)
+    );
+    document.getElementById('handoverCameraSelect').addEventListener('change', () => 
+      startCamera('handoverWebcam', 'handoverCameraSelect', handoverStream)
+    );
+
+    // Register student
+    async function registerStudent() {
+      const name = document.getElementById('studentName').value.trim();
+      const phone = document.getElementById('studentPhone').value.trim();
+      
+      if (!name) {
+        showMessage('error', 'Please enter student name');
+        return;
+      }
+
+      const video = document.getElementById('regWebcam');
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext('2d').drawImage(video, 0, 0);
+      const imageBase64 = canvas.toDataURL('image/jpeg');
+
+      document.getElementById('registerSpinner').style.display = 'inline-block';
+      document.getElementById('registerText').textContent = 'Registering...';
+      document.getElementById('registerBtn').disabled = true;
+
+      try {
+        const res = await fetch('/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, phone, image: imageBase64 })
+        });
+        const data = await res.json();
+
+        if (data.error) {
+          showMessage('error', data.error);
+        } else {
+          document.getElementById('registeredId').textContent = data.face_uuid || '---';
+          document.getElementById('registeredCard').style.display = 'block';
+          showMessage('success', `Student ${name} registered successfully!`);
+          document.getElementById('studentName').value = '';
+          document.getElementById('studentPhone').value = '';
+        }
+      } catch (err) {
+        showMessage('error', 'Registration failed');
+      } finally {
+        document.getElementById('registerSpinner').style.display = 'none';
+        document.getElementById('registerText').textContent = 'Register Student';
+        document.getElementById('registerBtn').disabled = false;
+      }
+    }
+
+    // Add parcel
+    async function addParcel() {
+      const tracking = document.getElementById('trackingCode').value.trim();
+      const owner = document.getElementById('ownerId').value.trim();
+      const note = document.getElementById('parcelNote').value.trim();
+
+      document.getElementById('addParcelSpinner').style.display = 'inline-block';
+      document.getElementById('addParcelText').textContent = 'Storing...';
+      document.getElementById('addParcelBtn').disabled = true;
+
+      try {
+        const res = await fetch('/parcel/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tracking_code: tracking || undefined,
+            owner_id: owner || undefined,
+            note: note
+          })
+        });
+        const data = await res.json();
+
+        if (data.error) {
+          showMessage('error', data.error);
+        } else {
+          showMessage('success', `Parcel stored at ${data.storage_location}, Slot ${data.slot}`);
+          document.getElementById('trackingCode').value = '';
+          document.getElementById('ownerId').value = '';
+          document.getElementById('parcelNote').value = '';
+          loadAllParcels();
+        }
+      } catch (err) {
+        showMessage('error', 'Failed to add parcel');
+      } finally {
+        document.getElementById('addParcelSpinner').style.display = 'none';
+        document.getElementById('addParcelText').textContent = 'Store Parcel';
+        document.getElementById('addParcelBtn').disabled = false;
+      }
+    }
+
+    // Verify student
+    async function verifyStudent() {
+      const video = document.getElementById('handoverWebcam');
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext('2d').drawImage(video, 0, 0);
+      const imageBase64 = canvas.toDataURL('image/jpeg').split(',')[1];
+
+      document.getElementById('verifySpinner').style.display = 'inline-block';
+      document.getElementById('verifyText').textContent = 'Verifying...';
+      document.getElementById('verifyBtn').disabled = true;
+
+      try {
+        const res = await fetch('/recognize', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: imageBase64 })
+        });
+        const data = await res.json();
+
+        if (data.recognized) {
+          verifiedStudentId = data.match?.id || null;
+          verifiedStudentName = data.name || "";
+          const displayId = data.user_id || data.match?.face_uuid || "---";
+          
+          document.getElementById('verifiedId').textContent = displayId;
+          document.getElementById('verifiedName').textContent = verifiedStudentName;
+          document.getElementById('verifiedCard').style.display = 'block';
+          document.getElementById('handoverDesc').textContent = `Parcels for ${verifiedStudentName}`;
+          
+          showMessage('success', `Verified: ${verifiedStudentName}`);
+          
+          // Load student parcels
+          if (verifiedStudentId) {
+            loadStudentParcels(verifiedStudentId);
+          }
+        } else {
+          showMessage('error', 'Face not recognized');
+          document.getElementById('verifiedCard').style.display = 'none';
+          document.getElementById('studentParcels').innerHTML = `
+            <div class="empty-state">
+              <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 12h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 14"/>
+                <path d="m7 18 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9"/>
+                <path d="m2 13 6 6"/>
+              </svg>
+              <p style="font-size: 0.875rem;">Verify student to see their parcels</p>
+            </div>
+          `;
+        }
+      } catch (err) {
+        showMessage('error', 'Verification failed');
+      } finally {
+        document.getElementById('verifySpinner').style.display = 'none';
+        document.getElementById('verifyText').textContent = 'Verify Student';
+        document.getElementById('verifyBtn').disabled = false;
+      }
+    }
+
+    // Load student parcels
+    async function loadStudentParcels(studentId) {
+      try {
+        const res = await fetch(`/track_orders?owner_id=${studentId}`);
+        const data = await res.json();
+        const parcels = (data.parcels || []).filter(p => p.status === 'stored');
+        
+        const container = document.getElementById('studentParcels');
+        if (parcels.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+              </svg>
+              <p style="font-size: 0.875rem;">No parcels to collect</p>
+            </div>
+          `;
+        } else {
+          container.innerHTML = `<div class="scrollable">${parcels.map(p => createParcelCardWithCollect(p)).join('')}</div>`;
+        }
+      } catch (err) {
+        document.getElementById('studentParcels').innerHTML = '<p style="color: oklch(0.65 0.22 15); text-align: center;">Failed to load parcels</p>';
+      }
+    }
+
+    // Collect parcel
+    async function collectParcel(parcelId) {
+      try {
+        const res = await fetch('/parcel/mark_collected', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ parcel_id: parcelId })
+        });
+        const data = await res.json();
+
+        if (data.error) {
+          showMessage('error', data.error);
+        } else {
+          showMessage('success', 'Parcel collected successfully! ✅');
+          // Refresh all data to update shelf and parcel lists
+          if (verifiedStudentId) {
+            loadStudentParcels(verifiedStudentId);
+          }
+          await loadAllParcels();
+          // Update stats
+          const stats = await fetch('/stats').then(r => r.json());
+          document.getElementById('statTotal').textContent = stats.total || 0;
+          document.getElementById('statStored').textContent = stats.stored || 0;
+          document.getElementById('statReady').textContent = stats.ready_for_pickup || 0;
+        }
+      } catch (err) {
+        console.error('Collection error:', err);
+        showMessage('error', 'Collection failed');
+      }
+    }
+
+    // Load all parcels
+    async function loadAllParcels() {
+      try {
+        const res = await fetch('/parcel/all');
+        const data = await res.json();
+        allParcels = data.parcels || [];
+        
+        // Update recent parcels
+        const recent = allParcels.filter(p => p.status === 'stored').slice(0, 5);
+        const recentContainer = document.getElementById('recentParcels');
+        if (recent.length === 0) {
+          recentContainer.innerHTML = `
+            <div class="empty-state">
+              <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+              </svg>
+              <p style="font-size: 0.875rem;">No recent parcels</p>
+            </div>
+          `;
+        } else {
+          recentContainer.innerHTML = recent.map(p => createParcelCard(p)).join('');
+        }
+        
+        // Update stats
+        const stored = allParcels.filter(p => p.status === 'stored');
+        const ready = stored.filter(p => p.days_remaining !== undefined && p.days_remaining <= 0);
+        document.getElementById('statTotal').textContent = allParcels.length;
+        document.getElementById('statStored').textContent = stored.length;
+        document.getElementById('statReady').textContent = ready.length;
+        
+        // Update shelf grid
+        updateShelfGrid(stored);
+        
+        // Update table
+        updateTable();
+      } catch (err) {
+        allParcels = [];
+      }
+    }
+
+    // Create parcel card
+    function createParcelCard(parcel) {
+      return `
+        <div class="parcel-card">
+          <div class="parcel-header">
+            <div class="tracking-code">${parcel.tracking_code}</div>
+            <span class="status-badge status-${parcel.status}">${parcel.status}</span>
+          </div>
+          <div class="parcel-details">
+            <strong>Slot:</strong> ${parcel.slot || 'N/A'}<br>
+            ${parcel.note ? `<strong>Note:</strong> ${parcel.note}<br>` : ''}
+            ${parcel.storage_location ? `<strong>Location:</strong> ${parcel.storage_location}<br>` : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    function createParcelCardWithCollect(parcel) {
+      return `
+        <div class="parcel-card">
+          <div class="parcel-header">
+            <div class="tracking-code">${parcel.tracking_code}</div>
+            <span class="status-badge status-${parcel.status}">${parcel.status}</span>
+          </div>
+          <div class="parcel-details">
+            <strong>Slot:</strong> ${parcel.slot || 'N/A'}<br>
+            ${parcel.note ? `<strong>Note:</strong> ${parcel.note}<br>` : ''}
+            ${parcel.storage_location ? `<strong>Location:</strong> ${parcel.storage_location}<br>` : ''}
+          </div>
+          <button class="btn-collect w-full" style="margin-top: 1rem;" onclick="collectParcel(${parcel.id})">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Collect Parcel
+          </button>
+        </div>
+      `;
+    }
+
+    // Update shelf grid
+    function updateShelfGrid(stored) {
+      const grid = document.getElementById('shelfGrid');
+      if (stored.length === 0) {
+        grid.innerHTML = '<div class="empty-state"><p style="font-size: 0.875rem;">No parcels in storage</p></div>';
+        grid.style.display = 'block';
+      } else {
+        grid.style.display = 'grid';
+        grid.innerHTML = stored.map(p => {
+          const ready = p.days_remaining !== undefined && p.days_remaining <= 0;
+          return `
+            <div class="shelf-item ${ready ? 'ready' : 'waiting'}">
+              <div class="shelf-slot">${p.slot}</div>
+              <div class="shelf-tracking">${p.tracking_code}</div>
+              <div class="shelf-badge">${p.storage_location}</div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    // Update table
+    function updateTable() {
+      const filtered = allParcels.filter(p => {
+        if (currentFilter === 'stored' && p.status !== 'stored') return false;
+        if (currentFilter === 'collected' && p.status !== 'collected') return false;
+        if (searchQuery) {
+          const query = searchQuery.toLowerCase();
+          return (
+            p.tracking_code?.toLowerCase().includes(query) ||
+            p.storage_location?.toLowerCase().includes(query) ||
+            p.slot?.toLowerCase().includes(query)
+          );
+        }
+        return true;
+      });
+
+      const tbody = document.getElementById('parcelsTableBody');
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 3rem; color: oklch(0.6 0.01 260);">No parcels found</td></tr>';
+      } else {
+        tbody.innerHTML = filtered.map(p => `
+          <tr>
+            <td style="font-family: 'Courier New', monospace;">${p.tracking_code}</td>
+            <td>${p.storage_location || '-'}</td>
+            <td>${p.slot || '-'}</td>
+            <td><span class="status-badge status-${p.status}">${p.status}</span></td>
+            <td style="color: oklch(0.7 0.01 260);">${p.arrival_time ? new Date(p.arrival_time).toLocaleDateString() : '-'}</td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    // Filter buttons
+    document.querySelectorAll('[data-filter]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('[data-filter]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = btn.dataset.filter;
+        updateTable();
+      });
+    });
+
+    // Search
+    document.getElementById('searchQuery').addEventListener('input', (e) => {
+      searchQuery = e.target.value;
+      updateTable();
+    });
+
+    // Copy ID
+    function copyId(elementId) {
+      const id = document.getElementById(elementId).textContent;
+      navigator.clipboard.writeText(id).then(() => {
+        showMessage('success', 'ID copied to clipboard!');
+      });
+    }
+
+    // Event listeners
+    document.getElementById('registerBtn').addEventListener('click', registerStudent);
+    document.getElementById('addParcelBtn').addEventListener('click', addParcel);
+    document.getElementById('verifyBtn').addEventListener('click', verifyStudent);
+
+    // Smooth Tab Animation
+    const tabs = document.querySelectorAll('.tab-button');
+    tabs.forEach(tab => {
+      tab.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-2px)';
+      });
+      tab.addEventListener('mouseleave', function() {
+        if (!this.classList.contains('active')) {
+          this.style.transform = 'translateY(0)';
+        }
+      });
+    });
+
+    // Card interactions
+    document.querySelectorAll('.stat-card, .shelf-cell').forEach(card => {
+      card.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-4px) scale(1.02)';
+      });
+      card.addEventListener('mouseleave', function() {
+        this.style.transform = 'translateY(0) scale(1)';
+      });
+    });
+  </script>
+</body>
+</html>

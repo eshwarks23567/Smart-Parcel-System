@@ -1,1 +1,0 @@
-Static files (none required for prototype). The basic JS is embedded in the HTML for simplicity.
