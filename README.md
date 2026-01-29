@@ -85,11 +85,6 @@ python db_init.py
 python app.py
 ```
 
-### 6. Access the Portals
-- **Home Page**: http://127.0.0.1:5000/
-- **Student Portal**: http://127.0.0.1:5000/student
-- **Staff Portal**: http://127.0.0.1:5000/staff
-
 ## 📁 Project Structure
 
 ```
