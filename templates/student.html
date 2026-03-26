@@ -947,6 +947,11 @@
         showMessage('error', 'Please identify yourself first.');
         return;
       }
+      if (!currentOwnerId) {
+        showMessage('error', 'Please identify yourself with face recognition first.');
+        return;
+      }
+
       if (!tracking) {
         showMessage('error', 'Please enter a tracking code.');
         return;

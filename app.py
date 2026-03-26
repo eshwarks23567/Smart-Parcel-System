@@ -529,10 +529,10 @@ def track_orders_all():
     
     if owner_id:
         # Get parcels for specific owner
-        parcels = session.query(Parcel).filter(Parcel.owner_id == owner_id).all()
+        parcels = session.query(Parcel).filter(Parcel.owner_id == owner_id).order_by(Parcel.id.desc()).all()
     else:
         # Get all parcels
-        parcels = session.query(Parcel).all()
+        parcels = session.query(Parcel).order_by(Parcel.id.desc()).all()
     
     parcel_list = []
     for p in parcels:
