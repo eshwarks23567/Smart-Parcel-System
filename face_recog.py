@@ -5,11 +5,10 @@ import base64
 import io
 import numpy as np
 
-# Try to import DeepFace; if unavailable, fall back to OpenCV-based simple embeddings
-_HAS_DEEPFACE = False
+# Try to check if deepface is installable/present without importing the whole heavy library
 try:
-    from deepface import DeepFace
-    _HAS_DEEPFACE = True
+    import importlib.util
+    _HAS_DEEPFACE = importlib.util.find_spec("deepface") is not None
 except Exception:
     _HAS_DEEPFACE = False
 
@@ -30,6 +29,7 @@ def load_model():
     if not _HAS_DEEPFACE:
         return None
     if MODEL is None:
+        from deepface import DeepFace
         MODEL = DeepFace.build_model(MODEL_NAME)
     return MODEL
 
@@ -110,6 +110,7 @@ def get_embedding_from_file(image_path, enforce_detection=True):
         enforce_detection: If True, raises error when no face detected. If False, uses fallback.
     """
     if _HAS_DEEPFACE:
+        from deepface import DeepFace
         # Some DeepFace versions do not accept a 'model' kwarg for represent(); call with model_name only
         # load_model() will still ensure weights are available if needed
         _ = load_model()
