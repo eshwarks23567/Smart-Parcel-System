@@ -602,6 +602,28 @@ def mark_collected():
     })
 
 
+@app.route('/api/users')
+def api_users():
+    session = get_session()
+    try:
+        users = session.query(User).all()
+        result = []
+        for u in users:
+            parcel_count = session.query(Parcel).filter_by(owner_id=u.id).count()
+            stored_count = session.query(Parcel).filter_by(owner_id=u.id, status='stored').count()
+            result.append({
+                'id': u.id,
+                'name': u.name,
+                'phone': u.phone or '',
+                'face_uuid': u.face_uuid or '',
+                'parcel_count': parcel_count,
+                'stored_count': stored_count
+            })
+        return jsonify({'users': result, 'total': len(result)})
+    finally:
+        session.close()
+
+
 if __name__ == '__main__':
     # Run without the debugger/reloader so we get a single process when started from scripts
     app.run(host='0.0.0.0', port=5000, debug=False)

@@ -781,6 +781,15 @@
           </svg>
           All Parcels
         </button>
+        <button class="tab-trigger" data-tab="users">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+          Users
+        </button>
       </div>
 
       <!-- Register Tab -->
@@ -998,6 +1007,46 @@
           </div>
         </div>
       </div>
+
+      <!-- Users Tab -->
+      <div class="tab-content" id="tab-users" style="margin-top: 1.5rem;">
+        <div class="card">
+          <div class="card-header" style="border-bottom: none;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap;">
+              <div>
+                <div class="card-title">Registered Users</div>
+                <p class="card-description">All students registered in the system</p>
+              </div>
+              <div class="filter-bar">
+                <input id="userSearchQuery" type="text" placeholder="Search users..." style="width: 250px;">
+              </div>
+            </div>
+          </div>
+          <div class="card-content">
+            <div style="overflow-x: auto;">
+              <table id="usersTable">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th>Face UUID</th>
+                    <th>Total Parcels</th>
+                    <th>Stored</th>
+                  </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                  <tr>
+                    <td colspan="6" style="text-align: center; padding: 3rem; color: oklch(0.6 0.01 260);">
+                      Loading users...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </main>
 
@@ -1044,6 +1093,9 @@
         // Load data for specific tabs
         if (tab === 'receive' || tab === 'parcels' || tab === 'shelf') {
           loadAllParcels();
+        }
+        if (tab === 'users') {
+          loadAllUsers();
         }
       });
     });
@@ -1533,6 +1585,50 @@
     document.getElementById('registerBtn').addEventListener('click', registerStudent);
     document.getElementById('addParcelBtn').addEventListener('click', addParcel);
     document.getElementById('verifyBtn').addEventListener('click', verifyStudent);
+
+    // Users tab
+    let allUsers = [];
+    let userSearchQuery = '';
+
+    async function loadAllUsers() {
+      try {
+        const res = await fetch('/api/users');
+        const data = await res.json();
+        allUsers = data.users || [];
+        renderUsersTable();
+      } catch (err) {
+        document.getElementById('usersTableBody').innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 3rem; color: oklch(0.65 0.22 15);">Failed to load users</td></tr>';
+      }
+    }
+
+    function renderUsersTable() {
+      const filtered = allUsers.filter(u => {
+        if (!userSearchQuery) return true;
+        const q = userSearchQuery.toLowerCase();
+        return u.name.toLowerCase().includes(q) || u.phone.toLowerCase().includes(q) || u.face_uuid.toLowerCase().includes(q);
+      });
+
+      const tbody = document.getElementById('usersTableBody');
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 3rem; color: oklch(0.6 0.01 260);">No users found</td></tr>';
+      } else {
+        tbody.innerHTML = filtered.map(u => `
+          <tr>
+            <td>${u.id}</td>
+            <td style="font-weight: 500;">${u.name}</td>
+            <td>${u.phone || '-'}</td>
+            <td style="font-family: 'Courier New', monospace; font-size: 0.8125rem;">${u.face_uuid || '-'}</td>
+            <td>${u.parcel_count}</td>
+            <td>${u.stored_count > 0 ? '<span class="status-badge status-stored">' + u.stored_count + ' stored</span>' : '<span style="color: oklch(0.5 0.01 260);">0</span>'}</td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    document.getElementById('userSearchQuery').addEventListener('input', (e) => {
+      userSearchQuery = e.target.value;
+      renderUsersTable();
+    });
 
     // Smooth Tab Animation
     const tabs = document.querySelectorAll('.tab-button');
