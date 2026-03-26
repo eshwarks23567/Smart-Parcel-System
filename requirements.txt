@@ -6,5 +6,6 @@ tensorflow
 sqlalchemy
 pillow
 numpy
-opencv-python
+opencv-python-headless
 itsdangerous
+gunicorn
