@@ -1413,11 +1413,7 @@
             loadStudentParcels(verifiedStudentId);
           }
           await loadAllParcels();
-          // Update stats
-          const stats = await fetch('/stats').then(r => r.json());
-          document.getElementById('statTotal').textContent = stats.total || 0;
-          document.getElementById('statStored').textContent = stats.stored || 0;
-          document.getElementById('statReady').textContent = stats.ready_for_pickup || 0;
+
         }
       } catch (err) {
         console.error('Collection error:', err);
