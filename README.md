@@ -1,17 +1,17 @@
-# 📦 Smart Parcel Management System
+#  Smart Parcel Management System
 
 An intelligent, automated parcel management system powered by advanced facial recognition AI. This system enables seamless parcel tracking and collection for students through face-based authentication, automatic storage assignment, and a modern, beautifully designed interface with three distinct portals.
 
-## ✨ Key Features
+##  Key Features
 
-### 🏠 Home Page
+###  Home Page
 - **Modern Landing Page** - Professional dark theme with gradient backgrounds
 - **Feature Showcase** - Six interactive feature cards highlighting key capabilities
 - **Portal Selection** - Easy access to Student and Staff portals
 - **Interactive Effects** - Animated backgrounds, magnetic buttons, and smooth transitions
 - **Responsive Design** - Optimized for desktop, tablet, and mobile devices
 
-### 🎓 Student Portal
+###  Student Portal
 - **Face Identification** - Quick identity verification with live camera feed
 - **Self-Service Order Entry** - Add parcels with tracking codes and custom notes
 - **My Parcels Dashboard** - View all your parcels with status badges and details
@@ -20,7 +20,7 @@ An intelligent, automated parcel management system powered by advanced facial re
 - **Status Tracking** - Track parcels through stored → collected lifecycle
 - **Unique Face UUID** - Each student gets a unique 6-character identifier
 
-### 👨‍💼 Staff Portal
+###  Staff Portal
 - **5-Tab Interface** - Organized workflow across Register, Receive, Handover, Shelf, and All Parcels
 - **Student Registration** - Quick registration with dual camera setup
 - **Parcel Reception** - Fast parcel entry with automatic storage slot assignment
@@ -30,7 +30,7 @@ An intelligent, automated parcel management system powered by advanced facial re
 - **Advanced Search** - Filter parcels by tracking code with instant results
 - **Recently Added Parcels** - Quick access to latest 5 parcels
 
-### 🎨 Modern Design System
+###  Modern Design System
 - **Dark Theme** - Professional dark mode with OKLCH color space
 - **Glassmorphism** - Frosted glass effects with backdrop blur
 - **Animated Blobs** - Floating gradient backgrounds for visual depth
@@ -39,7 +39,7 @@ An intelligent, automated parcel management system powered by advanced facial re
 - **Smooth Transitions** - Cubic-bezier easing for polished animations
 - **Card Hover Effects** - Elevation and glow effects on interaction
 
-### 🤖 Advanced AI Features
+###  Advanced AI Features
 - **VGG-Face Model** - Enhanced accuracy with state-of-the-art recognition
 - **Image Preprocessing** - Histogram equalization and denoising for better results
 - **OpenCV Detector** - Fast and reliable face detection
@@ -48,7 +48,7 @@ An intelligent, automated parcel management system powered by advanced facial re
 - **Multi-Sample Recognition** - Enhanced accuracy through multiple face embeddings
 - **Automatic Storage Assignment** - Smart slot allocation based on availability
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### 1. Clone the Repository
 ```bash
@@ -85,7 +85,7 @@ python db_init.py
 python app.py
 ```
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 CPI/
@@ -115,7 +115,7 @@ CPI/
     └── check_users_detailed.py # Database inspection utility
 ```
 
-## 🎯 User Workflows
+##  User Workflows
 
 ### Student Self-Service Flow
 1. **Register**: Capture face → Get unique 6-character ID
@@ -136,7 +136,7 @@ CPI/
    - Show specific parcel with "Collect" button
    - Mark as collected → Moves to "Collected Parcels"
 
-## 🔌 API Endpoints
+##  API Endpoints
 
 ### Authentication & User Management
 - `POST /register` - Register new user with face image
@@ -153,7 +153,7 @@ CPI/
 - `GET /health` - Health check endpoint
 - `GET /stats` - System statistics
 
-## 🛠️ Technology Stack
+##  Technology Stack
 
 ### Backend
 - **Framework**: Flask 2.x (Python)
@@ -178,7 +178,7 @@ CPI/
 3. **FaceSample** - Multiple face samples per user
 4. **TrackingVariation** - Alternate tracking code formats
 
-## ⚙️ Configuration
+##  Configuration
 
 ### Environment Variables (Optional)
 Create a `.env` file for optional features:
@@ -201,7 +201,7 @@ DETECTOR_BACKEND=opencv
 ENABLE_FACE_ALIGNMENT=True
 ```
 
-## 🎨 Design System
+##  Design System
 
 ### Color Palette (OKLCH)
 - **Background**: `oklch(0.12 0.01 260)` - Deep dark blue-gray
@@ -231,7 +231,7 @@ ENABLE_FACE_ALIGNMENT=True
 - **Spacing Scale**: 0.5rem, 1rem, 1.5rem, 2rem, 2.5rem
 - **Border Radius**: 0.5-1.5rem for cards, 12-24px for major sections
 
-## 🔐 Security Considerations
+##  Security Considerations
 
 ### Current Implementation
 - Face embeddings stored in database
@@ -251,7 +251,7 @@ ENABLE_FACE_ALIGNMENT=True
 - [ ] Implement audit logging
 - [ ] Add backup and recovery procedures
 
-## 🚀 Production Deployment
+##  Production Deployment
 
 ### Server Requirements
 - **Python**: 3.8+
@@ -289,9 +289,9 @@ Docker + Docker Compose
 9. Configure firewall and security
 10. Set up monitoring and logging
 
-## 📊 Performance Optimizations
+##  Performance Optimizations
 
-### ✅ Implemented
+###  Implemented
 - **Database Indexes** - 7 indexes on frequently queried columns (50-100x faster queries)
   - User.face_uuid (identity lookups)
   - Parcel.tracking_code (tracking searches)
@@ -305,14 +305,14 @@ Docker + Docker Compose
   - pool_pre_ping=True for connection health checks
   - pool_recycle=3600 for automatic connection recycling
 
-### 🔮 Future Optimizations
+###  Future Optimizations
 - Use GPU for face recognition (10-50x faster)
 - Implement Redis caching for embeddings
 - Use CDN for static assets in production
 - Implement lazy loading for images
 - Add query result caching
 
-## 🧪 Testing
+##  Testing
 
 ```bash
 # Run all tests
@@ -328,7 +328,7 @@ python -m scripts.check_users_detailed
 python -m scripts.test_tracking_search
 ```
 
-## 🤝 Contributing
+##  Contributing
 
 Contributions are welcome! Please follow these steps:
 
@@ -344,48 +344,48 @@ Contributions are welcome! Please follow these steps:
 - Add comments for complex logic
 - Update documentation for new features
 
-## 📝 Changelog
+##  Changelog
 
-### Version 3.0 (January 2026) - Major UI Overhaul & Performance Boost 🎨⚡
+### Version 3.0 (January 2026) - Major UI Overhaul & Performance Boost 
 
 #### UI/UX Improvements
-- ✅ Complete frontend redesign with modern dark theme
-- ✅ OKLCH color space for vibrant, perceptually uniform colors
-- ✅ Glassmorphism design with frosted glass effects
-- ✅ Animated gradient backgrounds with floating blobs
-- ✅ Interactive effects: magnetic buttons, shimmer, smooth transitions
-- ✅ New home landing page with feature showcase
-- ✅ Three-portal system: Home → Student/Staff
-- ✅ Back buttons for easy navigation
-- ✅ Enhanced card interactions and hover effects
-- ✅ 3-column student portal layout (Identify/Add Order/My Parcels)
-- ✅ 5-tab staff portal (Register/Receive/Handover/Shelf/All Parcels)
-- ✅ Real-time statistics dashboard
-- ✅ Improved camera device selection with device labels
+-  Complete frontend redesign with modern dark theme
+-  OKLCH color space for vibrant, perceptually uniform colors
+-  Glassmorphism design with frosted glass effects
+-  Animated gradient backgrounds with floating blobs
+-  Interactive effects: magnetic buttons, shimmer, smooth transitions
+-  New home landing page with feature showcase
+-  Three-portal system: Home → Student/Staff
+-  Back buttons for easy navigation
+-  Enhanced card interactions and hover effects
+-  3-column student portal layout (Identify/Add Order/My Parcels)
+-  5-tab staff portal (Register/Receive/Handover/Shelf/All Parcels)
+-  Real-time statistics dashboard
+-  Improved camera device selection with device labels
 
 #### AI/Recognition Improvements
-- ✅ Upgraded to VGG-Face model for better accuracy
-- ✅ Image preprocessing: histogram equalization + denoising
-- ✅ Optimized recognition threshold (0.4) for VGG-Face
-- ✅ Enhanced face detection with OpenCV backend
-- ✅ Multi-sample recognition for improved accuracy
+-  Upgraded to VGG-Face model for better accuracy
+-  Image preprocessing: histogram equalization + denoising
+-  Optimized recognition threshold (0.4) for VGG-Face
+-  Enhanced face detection with OpenCV backend
+-  Multi-sample recognition for improved accuracy
 
 #### Performance Optimizations
-- ✅ **Database Indexes** - 7 strategic indexes for 50-100x faster queries
-- ✅ **Gzip Compression** - Automatic response compression (70% size reduction)
-- ✅ **Connection Pooling** - Optimized database connections (10+20 pool)
-- ✅ **Query Optimization** - Indexed all frequently accessed columns
-- ✅ **Stable Camera Access** - Fixed MediaDevices API with local network support
-- ✅ **Image Validation** - Pre-send validation to prevent 400 errors
+-  **Database Indexes** - 7 strategic indexes for 50-100x faster queries
+-  **Gzip Compression** - Automatic response compression (70% size reduction)
+-  **Connection Pooling** - Optimized database connections (10+20 pool)
+-  **Query Optimization** - Indexed all frequently accessed columns
+-  **Stable Camera Access** - Fixed MediaDevices API with local network support
+-  **Image Validation** - Pre-send validation to prevent 400 errors
 
 ### Version 2.0 (2025)
-- ✅ Dual portal system (Student + Staff)
-- ✅ Self-service order entry for students
-- ✅ Smart hand-out workflow
-- ✅ Collected parcels tracking
-- ✅ Recently added parcels section
-- ✅ Professional UI redesign
-- ✅ Automatic storage slot assignment
+-  Dual portal system (Student + Staff)
+-  Self-service order entry for students
+-  Smart hand-out workflow
+-  Collected parcels tracking
+-  Recently added parcels section
+-  Professional UI redesign
+-  Automatic storage slot assignment
 
 ### Version 1.0 (2024)
 - Initial release with basic parcel management
@@ -393,7 +393,7 @@ Contributions are welcome! Please follow these steps:
 - Manual parcel entry
 - Basic tracking system
 
-## 🐛 Known Issues & Roadmap
+##  Known Issues & Roadmap
 
 ### Known Issues
 - Face recognition requires good lighting (improved with preprocessing)
@@ -417,15 +417,15 @@ Contributions are welcome! Please follow these steps:
 - [ ] Parcel photo capture
 - [ ] Signature capture on handover
 
-## 📄 License
+##  License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## 👨‍💻 Authors
+##  Authors
 
 - **Eshwar KS** - [@eshwarks23567](https://github.com/eshwarks23567)
 
-## 🙏 Acknowledgments
+##  Acknowledgments
 
 - **DeepFace** - Face recognition library
 - **VGG-Face** - State-of-the-art face recognition model
@@ -436,10 +436,11 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - **reactbits.dev** - Inspiration for modern UI effects
 - All open-source contributors
 
-## 📞 Support
+##  Support
 
 For support, please open an issue on GitHub or contact the development team.
 
 ---
 
-**Made with ❤️ for efficient parcel management**
+**Made with  for efficient parcel management**
+
